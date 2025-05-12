@@ -33,7 +33,7 @@ typedef struct {
 int maze_template[MAZE_HEIGHT][MAZE_WIDTH] = {
     {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
     {1,0,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,2,1},
-    {1,0,1,0,1,0,1,1,0,1,0,1,1,1,1,1,1,1,0,1},
+    {1,2,1,0,1,0,1,1,0,1,0,1,1,1,1,1,1,1,0,1},
     {1,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,1},
     {1,0,1,1,1,1,1,0,1,1,1,1,1,1,1,1,0,1,0,1},
     {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,1},
@@ -119,6 +119,18 @@ static void draw_lives(cairo_t *cr, GameState *game_state) {
 
         cairo_move_to(cr, x, y);
         cairo_show_text(cr, text);
+
+        cairo_set_source_rgb(cr, 1,0,0); // Blau für Anweisung
+        cairo_select_font_face(cr, "Arial", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL);
+        cairo_set_font_size(cr, 20);
+
+        const char *restart_text = "Press Enter to Restart";
+        cairo_text_extents(cr, restart_text, &extents);
+        x = (WINDOW_WIDTH - extents.width) / 2.0;
+        y += 40;  // Setzt den Text unterhalb von "GAME OVER"
+
+        cairo_move_to(cr, x, y);
+        cairo_show_text(cr, restart_text);
         return; // Keine Lebensanzeige mehr, wenn GAME OVER
     }
 
@@ -129,7 +141,7 @@ static void draw_lives(cairo_t *cr, GameState *game_state) {
     int x_start = padding;  // Setzt den Startpunkt für die Lebensanzeige auf die linke Seite
     int y_start = WINDOW_HEIGHT - 50; // Positioniert die Lebensanzeige 50 Pixel vom unteren Rand entfernt
 
-    cairo_set_source_rgb(cr, 1, 1, 1); // Weiß für Text
+    cairo_set_source_rgb(cr, 0, 153, 0); // Grün für Text
     cairo_select_font_face(cr, "Arial", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
     cairo_set_font_size(cr, 18);
     cairo_move_to(cr, x_start - padding, y_start);
@@ -141,6 +153,7 @@ static void draw_lives(cairo_t *cr, GameState *game_state) {
         cairo_fill(cr);
     }
 }
+
 
 
 
@@ -159,9 +172,30 @@ static gboolean draw_callback(GtkWidget *drawing_area, cairo_t *cr, gpointer use
     return FALSE;
 }
 
+void reset_game(GameState *game_state) {
+    game_state->lives = MAX_LIVES;
+    game_state->trap_visited = 0;
+    game_state->player.x = CELL_SIZE + 4;
+    game_state->player.y = CELL_SIZE + 4;
+    
+    // Maze zurücksetzen, falls notwendig
+    for (int y = 0; y < MAZE_HEIGHT; y++) {
+        for (int x = 0; x < MAZE_WIDTH; x++) {
+            game_state->maze[y][x] = maze_template[y][x];
+        }
+    }
+}
+
+
+
 static gboolean update_callback(GtkWidget *widget, GdkFrameClock *clock, gpointer user_data) {
     GameState *game_state = (GameState *)user_data;
     static gint64 previous_time = 0;
+    
+     if (game_state->lives <= 0) {
+        gtk_widget_queue_draw(widget); // Nur weiterzeichnen
+        return G_SOURCE_CONTINUE; // Keine Bewegung
+    }
 
     gint64 current_time = gdk_frame_clock_get_frame_time(clock);
     if (previous_time == 0) {
@@ -225,15 +259,38 @@ static gboolean update_callback(GtkWidget *widget, GdkFrameClock *clock, gpointe
 
 static gboolean on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data) {
     GameState *game_state = (GameState *)user_data;
+
+    // Wenn Game Over: nur Enter zulassen
+    if (game_state->lives <= 0) {
+        if (event->keyval == GDK_KEY_Return) {
+            // Spiel zurücksetzen
+            game_state->player.x = CELL_SIZE + 4;
+            game_state->player.y = CELL_SIZE + 4;
+            game_state->lives = MAX_LIVES;
+            game_state->trap_visited = 0;
+            memset(game_state->pressed_keys, 0, game_state->num_pressed_keys * sizeof(int));
+        }
+        return TRUE;
+    }
+
     game_state->pressed_keys[event->keyval] = 1;
     return TRUE;
 }
 
+
+
+
 static gboolean on_key_release(GtkWidget *widget, GdkEventKey *event, gpointer user_data) {
     GameState *game_state = (GameState *)user_data;
+
+    // Bei Game Over keine Tasten speichern
+    if (game_state->lives <= 0)
+        return TRUE;
+
     game_state->pressed_keys[event->keyval] = 0;
     return TRUE;
 }
+
 
 static void activate(GtkApplication *app, gpointer user_data) {
     GameState *game_state = (GameState *)user_data;
