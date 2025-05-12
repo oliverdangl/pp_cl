@@ -9,6 +9,9 @@
 #define MAZE_WIDTH (WINDOW_WIDTH / CELL_SIZE)
 #define MAZE_HEIGHT (WINDOW_HEIGHT / CELL_SIZE)
 
+#define WALL 1
+#define TRAP 2
+
 typedef struct {
     float x, y;
     cairo_surface_t *sprite_short;
@@ -22,10 +25,10 @@ typedef struct {
     int maze[MAZE_HEIGHT][MAZE_WIDTH];
 } GameState;
 
-// Einfaches Labyrinth (0 = Pfad, 1 = Wand)
+// Beispiel-Labyrinth (Wand = 1, Trap = 2)
 int maze_template[MAZE_HEIGHT][MAZE_WIDTH] = {
     {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-    {1,0,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,0,1},
+    {1,0,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,2,1},
     {1,0,1,0,1,0,1,1,0,1,0,1,1,1,1,1,1,1,0,1},
     {1,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,1},
     {1,0,1,1,1,1,1,0,1,1,1,1,1,1,1,1,0,1,0,1},
@@ -33,17 +36,27 @@ int maze_template[MAZE_HEIGHT][MAZE_WIDTH] = {
     {1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,1,0,1},
     {1,0,1,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,1},
     {1,0,1,0,1,1,1,1,1,1,1,1,0,1,0,1,1,1,0,1},
-    {1,0,1,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1},
+    {1,0,2,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1},
     {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}
 };
 
 static void draw_maze(cairo_t *cr, GameState *game_state) {
-    cairo_set_source_rgb(cr, 0.2, 0.2, 0.2); // Wandfarbe
-    
     for (int y = 0; y < MAZE_HEIGHT; y++) {
         for (int x = 0; x < MAZE_WIDTH; x++) {
-            if (game_state->maze[y][x] == 1) {
+            int cell = game_state->maze[y][x];
+
+            if (cell == WALL) {
+                cairo_set_source_rgb(cr, 0.3, 0.3, 0.3); // Dunkelgrau
                 cairo_rectangle(cr, x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+                cairo_fill(cr);
+
+                cairo_set_source_rgb(cr, 0, 0, 0); // Schwarzer Rand
+                cairo_set_line_width(cr, 1);
+                cairo_rectangle(cr, x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+                cairo_stroke(cr);
+            } else if (cell == TRAP) {
+                cairo_set_source_rgb(cr, 1, 0, 0); // Rot
+                cairo_arc(cr, x * CELL_SIZE + 20, y * CELL_SIZE + 20, 10, 0, 2 * G_PI);
                 cairo_fill(cr);
             }
         }
@@ -55,9 +68,9 @@ static int is_wall_collision(GameState *game_state, float x, float y) {
     int maze_y = (int)(y / CELL_SIZE);
 
     if (maze_x < 0 || maze_x >= MAZE_WIDTH || maze_y < 0 || maze_y >= MAZE_HEIGHT)
-        return 1; // außerhalb des Spielfelds
+        return 1;
 
-    return game_state->maze[maze_y][maze_x] == 1;
+    return game_state->maze[maze_y][maze_x] == WALL;
 }
 
 static void player_draw(cairo_t *cr, const Player *player) {
@@ -68,7 +81,8 @@ static void player_draw(cairo_t *cr, const Player *player) {
 static gboolean draw_callback(GtkWidget *drawing_area, cairo_t *cr, gpointer user_data) {
     GameState *game_state = (GameState *)user_data;
 
-    cairo_set_source_rgb(cr, 1, 1, 1);
+    // Hintergrund
+    cairo_set_source_rgb(cr, 0.9, 0.9, 0.9); // Hellgrau
     cairo_rectangle(cr, 0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
     cairo_fill(cr);
 
@@ -146,7 +160,6 @@ int main(int argc, char **argv) {
     game_state.num_pressed_keys = 256;
     game_state.pressed_keys = calloc(game_state.num_pressed_keys, sizeof(int));
 
-    // Labyrinth kopieren
     for (int y = 0; y < MAZE_HEIGHT; y++) {
         for (int x = 0; x < MAZE_WIDTH; x++) {
             game_state.maze[y][x] = maze_template[y][x];
@@ -166,7 +179,6 @@ int main(int argc, char **argv) {
     game_state.player.sprite = cairo_surface_create_for_rectangle(
         game_state.player.sprite_short, 0, 0, 32, 32);
 
-    // Startposition (freier Bereich im Labyrinth)
     game_state.player.x = CELL_SIZE + 4;
     game_state.player.y = CELL_SIZE + 4;
 
@@ -181,3 +193,4 @@ int main(int argc, char **argv) {
 
     return status;
 }
+
