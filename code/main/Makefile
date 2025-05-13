@@ -1,10 +1,14 @@
-all: maze_game clean_objs
+CC = gcc
+CFLAGS = `pkg-config --cflags gtk+-3.0` -Wall -g
+LIBS = `pkg-config --libs gtk+-3.0` -lm
+
+OBJS = main.o game.o draw.o input.o
+
+all: maze_game
 
 maze_game: $(OBJS)
 	$(CC) -o maze_game $(OBJS) $(LIBS)
-
-clean_objs:
-	rm -f *.o
+	rm -f $(OBJS)
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $<
