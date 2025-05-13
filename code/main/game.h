@@ -21,7 +21,15 @@ typedef struct {
 } Player;
 
 typedef struct {
+    float x, y;
+    float speed;
+} Enemy;
+
+
+
+typedef struct {
     Player player;
+    Enemy enemy;
     int *pressed_keys;
     unsigned int num_pressed_keys;
     int maze[MAZE_HEIGHT][MAZE_WIDTH];

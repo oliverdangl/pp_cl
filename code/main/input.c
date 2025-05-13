@@ -59,7 +59,7 @@ gboolean update_callback(GtkWidget *widget, GdkFrameClock *clock, gpointer user_
     float dt = (now - prev_time) / 1000000.0f;
     prev_time = now;
 
-    float dx = 0, dy = 0, speed = 200.0f * dt;
+    float dx = 0, dy = 0, speed = 500.0f * dt;
     if (gs->pressed_keys['w'] || gs->pressed_keys['W']) dy -= speed;
     if (gs->pressed_keys['s'] || gs->pressed_keys['S']) dy += speed;
     if (gs->pressed_keys['a'] || gs->pressed_keys['A']) dx -= speed;
