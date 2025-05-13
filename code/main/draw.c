@@ -22,16 +22,16 @@ static void draw_maze(cairo_t *cr, GameState *game_state) {
     }
 }
 
-static void draw_player(cairo_t *cr, const Player *player) {
+ void draw_player(cairo_t *cr, const Player *player) {
     float offset = (32 - PLAYER_HITBOX_SIZE) / 2.0f;
     cairo_set_source_rgb(cr, 0, 0.7, 0);
     cairo_rectangle(cr, player->x - offset, player->y - offset, 32, 32);
     cairo_fill(cr);
 }
 
-static void draw_lives(cairo_t *cr, GameState *game_state) {
+static void draw_game_over(cairo_t *cr, GameState *game_state){
     if (game_state->lives <= 0) {
-        cairo_set_source_rgb(cr, 1, 0, 0);
+        cairo_set_source_rgb(cr, 1, 0, 0); //rot
         cairo_select_font_face(cr, "Arial", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
         cairo_set_font_size(cr, 40);
         const char *text = "GAME OVER";
@@ -43,6 +43,11 @@ static void draw_lives(cairo_t *cr, GameState *game_state) {
         cairo_show_text(cr, text);
         return;
     }
+}
+
+
+static void draw_lives(cairo_t *cr, GameState *game_state) {
+    
 
     cairo_set_source_rgb(cr, 0, 0.7, 0);
     int width = 30, height = 10, padding = 10, x = padding, y = WINDOW_HEIGHT - 50;
@@ -57,6 +62,25 @@ static void draw_lives(cairo_t *cr, GameState *game_state) {
     }
 }
 
+void draw_visibility(cairo_t *cr, int px, int py, int tile_size, int vision_radius, int map_width, int map_height) {
+    cairo_set_source_rgb(cr, 0, 0, 0);  // Schwarz
+
+    for (int y = 0; y < map_height; y++) {
+        for (int x = 0; x < map_width; x++) {
+            int dx = x - px;
+            int dy = y - py;
+            if (abs(dx) > vision_radius || abs(dy) > vision_radius) {
+                cairo_rectangle(cr, x * tile_size, y * tile_size, tile_size, tile_size);
+            }
+        }
+    }
+
+    cairo_fill(cr);
+}
+
+
+
+
 gboolean draw_callback(GtkWidget *drawing_area, cairo_t *cr, gpointer user_data) {
     GameState *game_state = (GameState *)user_data;
 
@@ -65,8 +89,17 @@ gboolean draw_callback(GtkWidget *drawing_area, cairo_t *cr, gpointer user_data)
 
     draw_maze(cr, game_state);
     draw_player(cr, &game_state->player);
+
+    draw_game_over(cr, game_state);
+   
     draw_lives(cr, game_state);
+
+    // Sichtkegel auf Basis der Zellposition
+    int player_cell_x = game_state->player.x / CELL_SIZE;
+    int player_cell_y = game_state->player.y / CELL_SIZE;
+    draw_visibility(cr, player_cell_x, player_cell_y, CELL_SIZE, 2, MAZE_WIDTH, MAZE_HEIGHT);
 
     return FALSE;
 }
+
 
