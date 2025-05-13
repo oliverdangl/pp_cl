@@ -61,7 +61,7 @@ static void draw_lives(cairo_t *cr, GameState *game_state) {
         cairo_fill(cr);
     }
 }
-
+/*
 void draw_visibility(cairo_t *cr, int px, int py, int tile_size, int vision_radius, int map_width, int map_height) {
     cairo_set_source_rgb(cr, 0, 0, 0);  // Schwarz
 
@@ -77,7 +77,7 @@ void draw_visibility(cairo_t *cr, int px, int py, int tile_size, int vision_radi
 
     cairo_fill(cr);
 }
-
+*/
 
 
 
@@ -97,7 +97,7 @@ gboolean draw_callback(GtkWidget *drawing_area, cairo_t *cr, gpointer user_data)
     // Sichtkegel auf Basis der Zellposition
     int player_cell_x = game_state->player.x / CELL_SIZE;
     int player_cell_y = game_state->player.y / CELL_SIZE;
-    draw_visibility(cr, player_cell_x, player_cell_y, CELL_SIZE, 2, MAZE_WIDTH, MAZE_HEIGHT);
+    //draw_visibility(cr, player_cell_x, player_cell_y, CELL_SIZE, 2, MAZE_WIDTH, MAZE_HEIGHT);
 
     return FALSE;
 }
