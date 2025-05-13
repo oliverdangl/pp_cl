@@ -29,6 +29,7 @@ static void draw_maze(cairo_t *cr, GameState *game_state) {
     cairo_fill(cr);
 }
 
+/*
 void draw_enemy(cairo_t *cr, const Enemy *enemy) {
     float offset = (32 - PLAYER_HITBOX_SIZE) / 2.0f;
     cairo_set_source_rgb(cr, 1, 0, 0); // Rot
@@ -58,7 +59,7 @@ void update_enemy(GameState *game_state) {
         game_state->enemy.y = 0;
     }
 }
-
+*/
 
 
 
@@ -127,8 +128,8 @@ gboolean draw_callback(GtkWidget *drawing_area, cairo_t *cr, gpointer user_data)
     draw_lives(cr, game_state);
 
     // Sichtkegel auf Basis der Zellposition
-    int player_cell_x = game_state->player.x / CELL_SIZE;
-    int player_cell_y = game_state->player.y / CELL_SIZE;
+    //int player_cell_x = game_state->player.x / CELL_SIZE;
+    //int player_cell_y = game_state->player.y / CELL_SIZE;
     //draw_visibility(cr, player_cell_x, player_cell_y, CELL_SIZE, 2, MAZE_WIDTH, MAZE_HEIGHT);
 
     return FALSE;
