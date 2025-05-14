@@ -3,33 +3,39 @@
  * Checks for collision between player's hitbox and walls in the maze
  */
 static int is_wall_collision(GameState *game_state, float x, float y) {
-    // Player hitbox dimensions (smaller than cell size for smoother movement)
+    // Hitbox is a bit smaler than a cell (32x32) to prevent getting stuck fast
     const float hitbox_size = 28.0f;
-    // Offset to center the hitbox within the cell
-    const float offset = (32.0f - hitbox_size) / 2.0f;
+    const float margin = (32.0f - hitbox_size) / 2.0f;
 
-    // Calculate hitbox boundaries with slight shrinkage to prevent getting stuck on edges
-    float hitbox_left = x + offset;
-    float hitbox_top = y + offset;
-    float hitbox_right = hitbox_left + hitbox_size - 0.01f;
-    float hitbox_bottom = hitbox_top + hitbox_size - 0.01f;
+    // Calculating hitbox borders
+    float left = x + margin;
+    float right = x + 32.0f - margin;
+    float top = y + margin;
+    float bottom = y + 32.0f - margin;
 
-    // Convert pixel coordinates to maze grid coordinates
-    int left = (int)(hitbox_left / CELL_SIZE);
-    int right = (int)(hitbox_right / CELL_SIZE);
-    int top = (int)(hitbox_top / CELL_SIZE);
-    int bottom = (int)(hitbox_bottom / CELL_SIZE);
+    // Transfering in cell coordinates
+    int left_cell = (int)(left / CELL_SIZE);
+    int right_cell = (int)(right / CELL_SIZE);
+    int top_cell = (int)(top / CELL_SIZE);
+    int bottom_cell = (int)(bottom / CELL_SIZE);
 
-
-    // Checking if outside of the maze
-    if (left < 0 || right >= MAZE_WIDTH || top < 0 || bottom >= MAZE_HEIGHT){
+    // Collision with game border
+    if (left_cell < 0 || right_cell >= MAZE_WIDTH ||
+        top_cell < 0 || bottom_cell >= MAZE_HEIGHT) {
         return 1;
-        }
+    }
 
-    // Check all four corners of the hitbox against wall cells
-    return game_state->maze[top][left] == WALL || game_state->maze[top][right] == WALL ||
-           game_state->maze[bottom][left] == WALL || game_state->maze[bottom][right] == WALL;
+    // Checking for collision with wall
+    if (game_state->maze[top_cell][left_cell] == WALL ||
+        game_state->maze[top_cell][right_cell] == WALL ||
+        game_state->maze[bottom_cell][left_cell] == WALL ||
+        game_state->maze[bottom_cell][right_cell] == WALL) {
+        return 1;
+    }
+
+    return 0; // No collision
 }
+
 
 
 /*
