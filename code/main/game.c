@@ -14,6 +14,9 @@ int maze_template[MAZE_HEIGHT][MAZE_WIDTH] = {
     {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}
 };
 
+/*
+Function to reset a game by reseting player location and redrawing the maze
+*/
 void reset_game(GameState *game_state) {
     game_state->lives = MAX_LIVES;
     game_state->trap_visited = 0;
