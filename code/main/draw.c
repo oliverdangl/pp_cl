@@ -46,40 +46,6 @@ static void draw_maze(cairo_t *cr, GameState *game_state) {
     cairo_fill(cr);
 }
 
-/*
-*Currently not working
-
-void draw_enemy(cairo_t *cr, const Enemy *enemy) {
-    float offset = (32 - PLAYER_HITBOX_SIZE) / 2.0f;
-    cairo_set_source_rgb(cr, 1, 0, 0); // Rot
-    cairo_rectangle(cr, enemy->x - offset, enemy->y - offset, 32, 32);
-    cairo_fill(cr);
-}
-
-To DO: Shift to input.c
-void update_enemy(GameState *game_state) {
-    float dx = game_state->player.x - game_state->enemy.x;
-    float dy = game_state->player.y - game_state->enemy.y;
-    float distance = sqrt(dx * dx + dy * dy);
-
-    if (distance > 0.1f) {
-        float speed = game_state->enemy.speed;
-        game_state->enemy.x += (dx / distance) * speed;
-        game_state->enemy.y += (dy / distance) * speed;
-    }
-
-    // Kollision prüfen (rechteckiger Hitbox-Vergleich)
-    float diff_x = fabs(game_state->player.x - game_state->enemy.x);
-    float diff_y = fabs(game_state->player.y - game_state->enemy.y);
-    if (diff_x < PLAYER_HITBOX_SIZE && diff_y < PLAYER_HITBOX_SIZE) {
-        game_state->lives--;
-        // Optional: Gegner zurücksetzen nach Treffer
-        game_state->enemy.x = 0;
-        game_state->enemy.y = 0;
-    }
-}
-*/
-
 
 /**
  * Draws the "GAME OVER" message when the player has no lives remaining
@@ -131,25 +97,6 @@ static void draw_lives(cairo_t *cr, GameState *game_state) {
 }
 
 
-/*
-* For later use creating a fog
-void draw_visibility(cairo_t *cr, int px, int py, int tile_size, int vision_radius, int map_width, int map_height) {
-    cairo_set_source_rgb(cr, 0, 0, 0);  // Schwarz
-
-    for (int y = 0; y < map_height; y++) {
-        for (int x = 0; x < map_width; x++) {
-            int dx = x - px;
-            int dy = y - py;
-            if (abs(dx) > vision_radius || abs(dy) > vision_radius) {
-                cairo_rectangle(cr, x * tile_size, y * tile_size, tile_size, tile_size);
-            }
-        }
-    }
-
-    cairo_fill(cr);
-}
-*/
-
 
 /*
 Function that gets called to draw:
@@ -168,19 +115,13 @@ gboolean draw_callback(GtkWidget *drawing_area, cairo_t *cr, gpointer user_data)
 
     // Drawing maze and player
     draw_maze(cr, game_state);
-    draw_player(cr, &game_state->player);
-    //draw_enemy(cr, &game_state->enemy);
-    //update_enemy(game_state); 
+    draw_player(cr, &game_state->player); 
     
     
     draw_game_over(cr, game_state);
     draw_lives(cr, game_state);
 
-    // Sichtkegel auf Basis der Zellposition
-    //int player_cell_x = game_state->player.x / CELL_SIZE;
-    //int player_cell_y = game_state->player.y / CELL_SIZE;
-    //draw_visibility(cr, player_cell_x, player_cell_y, CELL_SIZE, 2, MAZE_WIDTH, MAZE_HEIGHT);
-
+   
     return FALSE;
 }
 
