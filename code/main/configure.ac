@@ -7,6 +7,12 @@ AM_INIT_AUTOMAKE([foreign]) #project is without gnu standards
 
 AC_PROG_CC #C program
 
-AC_CONFIG_FILES([Makefile]) #Which files need to be configured
+# GTK+ 3.0 mit pkg-config finden
+# Finding GTK+ 3.0 with pkg-config
+PKG_CHECK_MODULES([GTK], [gtk+-3.0])
+AC_SUBST([GTK_CFLAGS])
+AC_SUBST([GTK_LIBS])
 
+
+AC_CONFIG_FILES([Makefile]) #Which files need to be configured
 AC_OUTPUT #Generating output of the file
