@@ -24,12 +24,12 @@ void reset_game(GameState *game_state) {
     game_state->player.x = CELL_SIZE + 4;
     game_state->player.y = CELL_SIZE + 4;
 
-    // Maze ggf. freigeben, falls vorhanden
+    // Free maze if existing
     if (game_state->maze) {
         free_maze(game_state);
     }
 
-    // Maze neu allokieren
+    // Reallocate maze
     game_state->maze = malloc(MAZE_HEIGHT * sizeof(int *));
     for (int y = 0; y < MAZE_HEIGHT; y++) {
         game_state->maze[y] = malloc(MAZE_WIDTH * sizeof(int));
