@@ -11,8 +11,11 @@
 #define PLAYER_HITBOX_SIZE 32
 #define MAX_LIVES 3
 
-#define WALL 1
-#define TRAP 2
+typedef enum {
+    EMPTY = 0,
+    WALL = 1,
+    TRAP = 2
+}   CellType;
 
 typedef struct {
     float x, y;
@@ -20,20 +23,11 @@ typedef struct {
     cairo_surface_t *sprite;
 } Player;
 
-/*
-typedef struct {
-    float x, y;
-    float speed;
-} Enemy;
-*/
-
-
 typedef struct {
     Player player;
-    //Enemy enemy;
     int *pressed_keys;
     unsigned int num_pressed_keys;
-    int maze[MAZE_HEIGHT][MAZE_WIDTH];
+    int maze[MAZE_HEIGHT][MAZE_WIDTH]; 
     int lives;
     int trap_visited;
 } GameState;
