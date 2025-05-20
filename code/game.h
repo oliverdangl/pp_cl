@@ -27,13 +27,13 @@ typedef struct {
     Player player;
     int *pressed_keys;
     unsigned int num_pressed_keys;
-    int maze[MAZE_HEIGHT][MAZE_WIDTH]; 
+    int **maze;
     int lives;
     int trap_visited;
 } GameState;
 
 void reset_game(GameState *game_state);
-extern int maze_template[MAZE_HEIGHT][MAZE_WIDTH];
+void free_maze(GameState *game_state);
 
 #endif
 

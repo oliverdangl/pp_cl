@@ -38,6 +38,7 @@ int main(int argc, char **argv) {
     GameState gs;
     gs.num_pressed_keys = 256; //Keys on keyboard
     gs.pressed_keys = calloc(gs.num_pressed_keys, sizeof(int)); //Memory allocation for which key is pressed
+    gs.maze = NULL;
 
     /* Unnecessary for now
     gs.player.sprite = NULL;
@@ -51,6 +52,7 @@ int main(int argc, char **argv) {
     status = g_application_run(G_APPLICATION(app), argc, argv);
 
     free(gs.pressed_keys); 
+    free_maze(&gs);
     g_object_unref(app);
     return status;
 }
