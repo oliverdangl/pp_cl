@@ -5,9 +5,8 @@
  * Checks for collision between player's hitbox and walls in the maze
  */
 static int is_wall_collision(GameState *game_state, float x, float y) {
-    // Hitbox is a bit smaler than a cell (32x32) to prevent getting stuck fast
-    const float hitbox_size = 20.0f;
-    const float margin = (32.0f - hitbox_size) / 2.0f;
+    // Disctance to the border of the hitbox
+    const float margin =8.0f; // 32 - 8*2 = 16x16 hitbox
 
     // Calculating hitbox borders
     float left = x + margin;
@@ -110,7 +109,7 @@ gboolean update_callback(GtkWidget *widget, GdkFrameClock *clock, gpointer user_
 
 
     float dx = 0, dy = 0;
-    float speed = 500.0f * dt; //  Scaling speed
+    float speed = 300.0f * dt; //  Scaling speed
     
     // Keys for movement in upper and lower case
     if (gs->pressed_keys['w'] || gs->pressed_keys['W']) dy -= speed;
