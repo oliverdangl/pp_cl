@@ -9,8 +9,8 @@
  * - Empty cells: Left as background
  */
 static void draw_maze(cairo_t *cr, GameState *game_state) {
-    for (int y = 0; y < MAZE_HEIGHT; y++) {
-        for (int x = 0; x < MAZE_WIDTH; x++) {
+    for (int y = 0; y < game_state->maze_height; y++) {
+        for (int x = 0; x < game_state->maze_width; x++) {
             int cell = game_state->maze[y][x]; // Storing current field type
 
             if (cell == WALL) {

@@ -20,8 +20,8 @@ static int is_wall_collision(GameState *game_state, float x, float y) {
     int bottom_cell = (int)(bottom / CELL_SIZE);
 
     // Collision with game border
-    if (left_cell < 0 || right_cell >= MAZE_WIDTH ||
-        top_cell < 0 || bottom_cell >= MAZE_HEIGHT) {
+    if (left_cell < 0 || right_cell >= game_state->maze_width ||
+        top_cell < 0 || bottom_cell >= game_state->maze_height) {
         return 1;
     }
 

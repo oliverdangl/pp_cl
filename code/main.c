@@ -32,6 +32,14 @@ static void activate(GtkApplication *app, gpointer user_data) {
 }
 
 int main(int argc, char **argv) {
+/*
+    if(argc < 2){
+        fprintf(stderr, "Bitte Karte mit als Argument übergeben!\n");
+        return 1;
+    }
+    const char *maze_filename = argv[1];
+
+*/
     GtkApplication *app;
     int status;
 
@@ -39,13 +47,21 @@ int main(int argc, char **argv) {
     gs.num_pressed_keys = 256; //Keys on keyboard
     gs.pressed_keys = calloc(gs.num_pressed_keys, sizeof(int)); //Memory allocation for which key is pressed
     gs.maze = NULL;
+    gs.original_maze = NULL;
 
     /* Unnecessary for now
     gs.player.sprite = NULL;
     gs.player.sprite_short = NULL;
     */
 
-    reset_game(&gs);
+/*
+    if (!load_maze_from_file(&gs, maze_filename)) {
+        fprintf(stderr, "Konnte Labirinth aus folgendem File nicht laden: %s\n", maze_filename);
+        free(gs.pressed_keys);
+        return 1;
+    }
+ */  
+    load_maze_from_file(&gs, "maze.txt");
 
     app = gtk_application_new("org.maze.app", G_APPLICATION_FLAGS_NONE);
     g_signal_connect(app, "activate", G_CALLBACK(activate), &gs); // Connects activate signal with callback function

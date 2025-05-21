@@ -1,19 +1,58 @@
 #include "game.h"
 #include <stdlib.h>
+#include <stdio.h>
+#include <stdbool.h>
 
-static int maze_template[MAZE_HEIGHT][MAZE_WIDTH] = {
-    {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1},
-    {1,0,0,0,1,0,0,0,0,1,0,0,0,0,0,0,0,0,2,1},
-    {1,2,1,0,1,0,1,1,0,1,0,1,1,1,1,1,1,1,0,1},
-    {1,0,1,0,0,0,1,0,0,0,0,0,0,0,0,0,0,1,0,1},
-    {1,0,1,1,1,1,1,0,1,1,1,1,1,1,1,1,0,1,0,1},
-    {1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,1,0,1},
-    {1,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,1,0,1},
-    {1,0,1,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,1},
-    {1,0,1,0,1,1,1,1,1,1,1,1,0,1,0,1,1,1,0,1},
-    {1,0,2,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,1},
-    {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}
-};
+
+//Function to read in a map from another file
+bool load_maze_from_file(GameState *game_state, const char *filename) {
+    FILE *file = fopen(filename, "r");
+    
+    // Error message in case file could not be opened
+    if(!file){
+        fprintf(stderr, "Datei konnte nicht geöffnet werden: %s\n", filename);
+        return false;
+    }
+    
+    // Making sure width and height are given in txt file
+    if (fscanf(file, "%d %d", &game_state->maze_width, &game_state->maze_height) != 2) {
+        fprintf(stderr, "Fehler beim Einlesen der Maze-Dimensionen\n");
+        fclose(file);
+        return false;
+    }
+
+    // Allocating memory for the maze
+    game_state->maze = malloc(game_state->maze_height * sizeof(int *));
+    for (int y = 0; y < game_state->maze_height; y++) {
+        game_state->maze[y] = malloc(game_state->maze_width * sizeof(int));
+        for (int x = 0; x < game_state->maze_width; x++) {
+        
+            if (fscanf(file, "%d", &game_state->maze[y][x]) != 1) {
+                fprintf(stderr, "Fehler beim Einlesen der Maze-Daten bei (%d,%d)\n", y, x);
+                fclose(file);
+                return false;
+            }
+        }
+    }
+
+    // Original maze as copie from read in maze for game reset
+    game_state->original_maze = malloc(game_state->maze_height * sizeof(int *));
+    for (int y = 0; y < game_state->maze_height; y++) {
+        game_state->original_maze[y] = malloc(game_state->maze_width * sizeof(int));
+        for (int x = 0; x < game_state->maze_width; x++) {
+            game_state->original_maze[y][x] = game_state->maze[y][x];
+        }
+    }
+    game_state->lives = MAX_LIVES;
+    game_state->trap_visited = 0;
+    game_state->player.x = CELL_SIZE + 4;
+    game_state->player.y = CELL_SIZE + 4;
+
+    fclose(file);
+    return true;
+}
+
+
 
 /*
 Function to reset a game by reseting player location and redrawing the maze
@@ -24,28 +63,31 @@ void reset_game(GameState *game_state) {
     game_state->player.x = CELL_SIZE + 4;
     game_state->player.y = CELL_SIZE + 4;
 
-    // Free maze if existing
-    if (game_state->maze) {
-        free_maze(game_state);
-    }
-
-    // Reallocate maze
-    game_state->maze = malloc(MAZE_HEIGHT * sizeof(int *));
-    for (int y = 0; y < MAZE_HEIGHT; y++) {
-        game_state->maze[y] = malloc(MAZE_WIDTH * sizeof(int));
-        for (int x = 0; x < MAZE_WIDTH; x++) {
-            game_state->maze[y][x] = maze_template[y][x];
+    for (int y = 0; y < game_state->maze_height; y++) {
+        for (int x = 0; x < game_state->maze_width; x++) {
+            game_state->maze[y][x] = game_state->original_maze[y][x];
         }
     }
 }
 
 
 void free_maze(GameState *game_state) {
-    if (!game_state->maze) return;
+    if (!game_state->maze) return; // No maze existing
 
-    for (int y = 0; y < MAZE_HEIGHT; y++) {
-        free(game_state->maze[y]);
+   if (game_state->maze) {
+        for (int y = 0; y < game_state->maze_height; y++) {
+            free(game_state->maze[y]);
+        }
+        free(game_state->maze);
+        game_state->maze = NULL;
     }
-    free(game_state->maze);
-    game_state->maze = NULL;
+
+    if (game_state->original_maze) {
+        for (int y = 0; y < game_state->maze_height; y++) {
+            free(game_state->original_maze[y]);
+        }
+        free(game_state->original_maze);
+        game_state->original_maze = NULL;
+    }
 }
+
