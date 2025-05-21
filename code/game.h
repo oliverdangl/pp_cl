@@ -28,6 +28,8 @@ typedef struct {
     int *pressed_keys;
     unsigned int num_pressed_keys;
     int **maze;
+    int maze_width;
+    int maze_height;
     int lives;
     int trap_visited;
 } GameState;
