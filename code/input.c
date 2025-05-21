@@ -6,7 +6,7 @@
  */
 static int is_wall_collision(GameState *game_state, float x, float y) {
     // Hitbox is a bit smaler than a cell (32x32) to prevent getting stuck fast
-    const float hitbox_size = 28.0f;
+    const float hitbox_size = 20.0f;
     const float margin = (32.0f - hitbox_size) / 2.0f;
 
     // Calculating hitbox borders

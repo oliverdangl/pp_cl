@@ -7,7 +7,6 @@
 #define WINDOW_WIDTH 1000
 #define WINDOW_HEIGHT 800
 #define CELL_SIZE 40
-#define PLAYER_HITBOX_SIZE 32
 #define MAX_LIVES 3
 
 // Enum for map cell content

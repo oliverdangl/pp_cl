@@ -37,9 +37,6 @@ static void draw_maze(cairo_t *cr, GameState *game_state) {
 static void draw_player(cairo_t *cr, const Player *player) {
     if (!player->sprite) return;
 
-    int sprite_width = 4000;
-    int sprite_height = 4000;
-
     // Zentriert das Sprite anhand x/y
     cairo_set_source_surface(cr, player->sprite, player->x , player -> y);
     cairo_paint(cr);

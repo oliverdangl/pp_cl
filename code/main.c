@@ -51,8 +51,8 @@ int main(int argc, char **argv) {
     
  
     
-    gs.player.sprite_sheet = cairo_image_surface_create_from_png("../assets/slime_monster_spritesheet.png");
-    gs.player.sprite = cairo_surface_create_for_rectangle (gs.player.sprite_sheet ,0,48,24,24);
+    gs.player.sprite_sheet = cairo_image_surface_create_from_png("../assets/hero.png");
+    gs.player.sprite = cairo_surface_create_for_rectangle (gs.player.sprite_sheet ,96,0,32,32);
     
     
     if (cairo_surface_status(gs.player.sprite) != CAIRO_STATUS_SUCCESS) {
