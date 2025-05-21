@@ -21,7 +21,7 @@ typedef enum {
 // Struct for the player
 typedef struct {
     float x, y;
-    cairo_surface_t *sprite_short;
+    cairo_surface_t *sprite_sheet;
     cairo_surface_t *sprite;
 } Player;
 

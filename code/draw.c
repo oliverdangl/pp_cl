@@ -30,16 +30,19 @@ static void draw_maze(cairo_t *cr, GameState *game_state) {
     }
 }
 
-/*
- * This function renders the player as a green rectangle centered on their position,
- * with visual representation larger than the actual hitbox for better visibility.
- * In future: use sprite
+/**
+ * Draws the player using their sprite.
+ * Falls kein Sprite geladen wurde, passiert nichts.
  */
 static void draw_player(cairo_t *cr, const Player *player) {
-    float offset = (32 - PLAYER_HITBOX_SIZE) / 2.0f;
-    cairo_set_source_rgb(cr, 0, 0.7, 0); // color green
-    cairo_rectangle(cr, player->x - offset, player->y - offset, 32, 32);
-    cairo_fill(cr);
+    if (!player->sprite) return;
+
+    int sprite_width = 4000;
+    int sprite_height = 4000;
+
+    // Zentriert das Sprite anhand x/y
+    cairo_set_source_surface(cr, player->sprite, player->x , player -> y);
+    cairo_paint(cr);
 }
 
 /**
