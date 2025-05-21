@@ -6,7 +6,7 @@
 
 
 /*
-This function starts the App
+This function starts the App and reacts on events untill window is closed
 */
 static void activate(GtkApplication *app, gpointer user_data) {
     GameState *gs = user_data;
@@ -32,7 +32,7 @@ static void activate(GtkApplication *app, gpointer user_data) {
 }
 
 int main(int argc, char **argv) {
-/*
+/* Error when implementing : "(maze_game:2433): GLib-GIO-CRITICAL **: 16:07:37.715: This application can not open files."
     if(argc < 2){
         fprintf(stderr, "Bitte Karte mit als Argument übergeben!\n");
         return 1;
@@ -49,7 +49,7 @@ int main(int argc, char **argv) {
     gs.maze = NULL;
     gs.original_maze = NULL;
 
-    /* Unnecessary for now
+    /* Job for Aland 
     gs.player.sprite = NULL;
     gs.player.sprite_short = NULL;
     */
@@ -61,7 +61,7 @@ int main(int argc, char **argv) {
         return 1;
     }
  */  
-    load_maze_from_file(&gs, "maze.txt");
+    load_maze_from_file(&gs, "maze.txt"); // Workaround due to error message mentionen in line *35*
 
     app = gtk_application_new("org.maze.app", G_APPLICATION_FLAGS_NONE);
     g_signal_connect(app, "activate", G_CALLBACK(activate), &gs); // Connects activate signal with callback function

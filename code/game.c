@@ -6,7 +6,7 @@
 
 //Function to read in a map from another file
 bool load_maze_from_file(GameState *game_state, const char *filename) {
-    FILE *file = fopen(filename, "r");
+    FILE *file = fopen(filename, "r");// opening file
     
     // Error message in case file could not be opened
     if(!file){
@@ -14,7 +14,7 @@ bool load_maze_from_file(GameState *game_state, const char *filename) {
         return false;
     }
     
-    // Making sure width and height are given in txt file
+    // Reading height and width in first line
     if (fscanf(file, "%d %d", &game_state->maze_width, &game_state->maze_height) != 2) {
         fprintf(stderr, "Fehler beim Einlesen der Maze-Dimensionen\n");
         fclose(file);
@@ -26,7 +26,7 @@ bool load_maze_from_file(GameState *game_state, const char *filename) {
     for (int y = 0; y < game_state->maze_height; y++) {
         game_state->maze[y] = malloc(game_state->maze_width * sizeof(int));
         for (int x = 0; x < game_state->maze_width; x++) {
-        
+            //Reading content of the maze
             if (fscanf(file, "%d", &game_state->maze[y][x]) != 1) {
                 fprintf(stderr, "Fehler beim Einlesen der Maze-Daten bei (%d,%d)\n", y, x);
                 fclose(file);
@@ -65,12 +65,14 @@ void reset_game(GameState *game_state) {
 
     for (int y = 0; y < game_state->maze_height; y++) {
         for (int x = 0; x < game_state->maze_width; x++) {
-            game_state->maze[y][x] = game_state->original_maze[y][x];
+            game_state->maze[y][x] = game_state->original_maze[y][x]; // Loading original content of the maze in current maze
         }
     }
 }
 
-
+/*
+Release memory allocated for the maze
+*/
 void free_maze(GameState *game_state) {
     if (!game_state->maze) return; // No maze existing
 

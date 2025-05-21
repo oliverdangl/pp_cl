@@ -9,7 +9,3 @@ maze_game_CFLAGS = $(GTK_CFLAGS)#Compile flags
 
 #maze_game_LDFLAGS = `pkg-config --libs gtk+-3.0` #Tells linker which librarys are needed
 maze_game_LDADD = $(GTK_LIBS) #Linker flags
-
-
-
-

@@ -35,7 +35,7 @@ static void draw_maze(cairo_t *cr, GameState *game_state) {
  * with visual representation larger than the actual hitbox for better visibility.
  * In future: use sprite
  */
-void draw_player(cairo_t *cr, const Player *player) {
+static void draw_player(cairo_t *cr, const Player *player) {
     float offset = (32 - PLAYER_HITBOX_SIZE) / 2.0f;
     cairo_set_source_rgb(cr, 0, 0.7, 0); // color green
     cairo_rectangle(cr, player->x - offset, player->y - offset, 32, 32);

@@ -1,4 +1,6 @@
 #include "input.h"
+
+
 /**
  * Checks for collision between player's hitbox and walls in the maze
  */
@@ -32,7 +34,6 @@ static int is_wall_collision(GameState *game_state, float x, float y) {
         game_state->maze[bottom_cell][right_cell] == WALL) {
         return 1;
     }
-
     return 0; // No collision
 }
 
@@ -88,7 +89,7 @@ gboolean update_callback(GtkWidget *widget, GdkFrameClock *clock, gpointer user_
     GameState *gs = (GameState *)user_data; // Getting current game state
     static gint64 prev_time = 0;
 
-    // If game over, just trigger redraw and exit
+    // If game over, freeze game 
     if (gs->lives <= 0) {
         gtk_widget_queue_draw(widget);
         return G_SOURCE_CONTINUE;
@@ -103,7 +104,7 @@ gboolean update_callback(GtkWidget *widget, GdkFrameClock *clock, gpointer user_
         return G_SOURCE_CONTINUE;
     }
 
-    // dt = delta time (time since last frame)
+    // dt = delta time (time since last frame) for movement independent of framerate (smooth = good)
     float dt = (now - prev_time) / 1000000.0f;
     prev_time = now;
 
@@ -130,7 +131,7 @@ gboolean update_callback(GtkWidget *widget, GdkFrameClock *clock, gpointer user_
     // Check if player is standing on a trap
     int cell_x = gs->player.x / CELL_SIZE;
     int cell_y = gs->player.y / CELL_SIZE;
-    int in_trap = gs->maze[cell_y][cell_x] == TRAP;
+    bool in_trap = gs->maze[cell_y][cell_x] == TRAP;
 
      // Trap handling logic:
     if (in_trap && !gs->trap_visited) {
