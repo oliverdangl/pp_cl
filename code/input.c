@@ -14,11 +14,11 @@ static int is_wall_collision(GameState *game_state, float x, float y) {
     float top = y + margin;
     float bottom = y + 32.0f - margin;
 
-    // Transfering in cell coordinates
-    int left_cell = (int)(left / CELL_SIZE);
-    int right_cell = (int)(right / CELL_SIZE);
-    int top_cell = (int)(top / CELL_SIZE);
-    int bottom_cell = (int)(bottom / CELL_SIZE);
+    // Adjusting for maze offset
+    int left_cell = (int)((left - MAZE_OFFSET_X) / CELL_SIZE);
+    int right_cell = (int)((right - MAZE_OFFSET_X) / CELL_SIZE);
+    int top_cell = (int)((top - MAZE_OFFSET_Y) / CELL_SIZE);
+    int bottom_cell = (int)((bottom - MAZE_OFFSET_Y) / CELL_SIZE);
 
     // Collision with game border
     if (left_cell < 0 || right_cell >= game_state->maze_width ||
@@ -35,7 +35,6 @@ static int is_wall_collision(GameState *game_state, float x, float y) {
     }
     return 0; // No collision
 }
-
 
 
 /*
@@ -72,7 +71,6 @@ gboolean on_key_release(GtkWidget *widget, GdkEventKey *event, gpointer user_dat
     if (game_state->lives <= 0)
         return TRUE;
         
-        
     game_state->pressed_keys[event->keyval] = 0;
     return TRUE;
 }
@@ -107,10 +105,9 @@ gboolean update_callback(GtkWidget *widget, GdkFrameClock *clock, gpointer user_
     float dt = (now - prev_time) / 1000000.0f;
     prev_time = now;
 
-
     float dx = 0, dy = 0;
     float speed = 300.0f * dt; //  Scaling speed
-    
+
     // Keys for movement in upper and lower case
     if (gs->pressed_keys['w'] || gs->pressed_keys['W']) dy -= speed;
     if (gs->pressed_keys['s'] || gs->pressed_keys['S']) dy += speed;
@@ -128,21 +125,22 @@ gboolean update_callback(GtkWidget *widget, GdkFrameClock *clock, gpointer user_
     }
 
     // Check if player is standing on a trap
-    int cell_x = gs->player.x / CELL_SIZE;
-    int cell_y = gs->player.y / CELL_SIZE;
+    int cell_x = (gs->player.x - MAZE_OFFSET_X) / CELL_SIZE;
+    int cell_y = (gs->player.y - MAZE_OFFSET_Y) / CELL_SIZE;
     bool in_trap = gs->maze[cell_y][cell_x] == TRAP;
 
-     // Trap handling logic:
+    // Trap handling logic:
     if (in_trap && !gs->trap_visited) {
         gs->lives--;
         gs->trap_visited = 1;
     } else if (!in_trap) {
         gs->trap_visited = 0;
     }
-    
+
     // Request widget redraw
     gtk_widget_queue_draw(widget);
     return G_SOURCE_CONTINUE;
 }
+
 
 

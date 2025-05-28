@@ -1,29 +1,31 @@
 #include "draw.h"
+#include "game.h" // For MAZE_OFFSET_X and MAZE_OFFSET_Y
 
 /**
- * Draws the maze structure based on the game state
- * 
- * This function renders each cell of the maze according to its type:
- * - Walls: Dark gray filled rectangles with black borders
- * - Traps: Red circles
- * - Empty cells: Left as background
+ * Draws the maze based on the current game state.
+ * - Walls: dark gray rectangles with black borders
+ * - Traps: red circles
+ * - Empty cells: remain as background
  */
 static void draw_maze(cairo_t *cr, GameState *game_state) {
     for (int y = 0; y < game_state->maze_height; y++) {
         for (int x = 0; x < game_state->maze_width; x++) {
-            int cell = game_state->maze[y][x]; // Storing current field type
+            int cell = game_state->maze[y][x];
+
+            int draw_x = x * CELL_SIZE + MAZE_OFFSET_X;
+            int draw_y = y * CELL_SIZE + MAZE_OFFSET_Y;
 
             if (cell == WALL) {
                 cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);
-                cairo_rectangle(cr, x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+                cairo_rectangle(cr, draw_x, draw_y, CELL_SIZE, CELL_SIZE);
                 cairo_fill(cr);
                 cairo_set_source_rgb(cr, 0, 0, 0);
                 cairo_set_line_width(cr, 1);
-                cairo_rectangle(cr, x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE);
-                cairo_stroke(cr); 
+                cairo_rectangle(cr, draw_x, draw_y, CELL_SIZE, CELL_SIZE);
+                cairo_stroke(cr);
             } else if (cell == TRAP) {
                 cairo_set_source_rgb(cr, 1, 0, 0);
-                cairo_arc(cr, x * CELL_SIZE + 20, y * CELL_SIZE + 20, 10, 0, 2 * G_PI);
+                cairo_arc(cr, draw_x + 20, draw_y + 20, 10, 0, 2 * G_PI);
                 cairo_fill(cr);
             }
         }
@@ -31,38 +33,33 @@ static void draw_maze(cairo_t *cr, GameState *game_state) {
 }
 
 /**
- * Draws the player using their sprite.
- * Falls kein Sprite geladen wurde, passiert nichts.
+ * Draws the player using the loaded sprite.
+ * If no sprite is loaded, nothing is drawn.
  */
 static void draw_player(cairo_t *cr, const Player *player) {
     if (!player->sprite) return;
-
-    // Zentriert das Sprite anhand x/y
-    cairo_set_source_surface(cr, player->sprite, player->x , player -> y);
+    cairo_set_source_surface(cr, player->sprite, player->x, player->y);
     cairo_paint(cr);
 }
 
 /**
- * Draws the "GAME OVER" message when the player has no lives remaining
- * Includes hint to press Enter to restart
+ * Displays the "GAME OVER" screen if the player has no lives left.
+ * Also shows a hint to press ENTER to restart.
  */
-static void draw_game_over(cairo_t *cr, GameState *game_state){
+static void draw_game_over(cairo_t *cr, GameState *game_state) {
     if (game_state->lives <= 0) {
         cairo_set_source_rgb(cr, 1, 0, 0); // red
         cairo_select_font_face(cr, "Arial", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
         cairo_set_font_size(cr, 40);
         const char *text = "GAME OVER";
 
-        // Dimensions for text centering
         cairo_text_extents_t extents;
         cairo_text_extents(cr, text, &extents);
-
         double x = (WINDOW_WIDTH - extents.width) / 2.0;
         double y = WINDOW_HEIGHT / 2.0;
         cairo_move_to(cr, x, y);
         cairo_show_text(cr, text);
 
-        // Show hint to restart
         cairo_set_font_size(cr, 24);
         const char *hint = "Press ENTER to Restart";
         cairo_text_extents(cr, hint, &extents);
@@ -74,11 +71,14 @@ static void draw_game_over(cairo_t *cr, GameState *game_state){
 }
 
 /**
- * Draws the player's remaining lives indicator
+ * Draws the player's remaining lives as small red bars at the top-left corner.
  */
 static void draw_lives(cairo_t *cr, GameState *game_state) {
     cairo_set_source_rgb(cr, 1, 0, 0); // red
-    int width = 30, height = 10, padding = 10, x = padding, y = WINDOW_HEIGHT - 50;
+    int width = 30, height = 10, padding = 10;
+    int x = padding;
+    int y = 20; // top left
+
     cairo_select_font_face(cr, "Arial", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
     cairo_set_font_size(cr, 18);
     cairo_move_to(cr, x, y);
@@ -90,30 +90,29 @@ static void draw_lives(cairo_t *cr, GameState *game_state) {
     }
 }
 
-/*
- * Function that gets called to draw:
+/**
+ * Main rendering function.
+ * Called by GTK to draw:
  * - Background
  * - Maze
  * - Player
- * - Overlay (Game Over Text)
- * - Healthbar
+ * - Game Over overlay (if applicable)
+ * - Lives display
  */
 gboolean draw_callback(GtkWidget *drawing_area, cairo_t *cr, gpointer user_data) {
     GameState *game_state = (GameState *)user_data;
 
-    // Drawing light grey background
-    cairo_set_source_rgb(cr, 0.9, 0.9, 0.9);
+    cairo_set_source_rgb(cr, 0.9, 0.9, 0.9); // light grey background
     cairo_paint(cr);
 
-    // Drawing maze and player
     draw_maze(cr, game_state);
-    draw_player(cr, &game_state->player); 
-
+    draw_player(cr, &game_state->player);
     draw_game_over(cr, game_state);
     draw_lives(cr, game_state);
 
     return FALSE;
 }
+
 
 
 
