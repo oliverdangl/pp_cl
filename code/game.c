@@ -45,8 +45,11 @@ bool load_maze_from_file(GameState *game_state, const char *filename) {
     }
 
     // Set player position based on maze offset
+    
     game_state->player.x = MAZE_OFFSET_X + CELL_SIZE + 4;
     game_state->player.y = MAZE_OFFSET_Y + CELL_SIZE + 4;
+    game_state->lives = MAX_LIVES;
+    game_state->trap_visited = 0;
 
     fclose(file);
     return true;
