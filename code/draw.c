@@ -1,144 +1,111 @@
 #include "draw.h"
-#include "game.h" // For MAZE_OFFSET_X and MAZE_OFFSET_Y
+#include "game.h"
 #include <math.h>
 
-/**
- * Draws the maze based on the current game state.
- * - Walls: dark gray rectangles with black borders
- * - Traps: red circles
- * - Empty cells: remain as background
- */
-static void draw_maze(cairo_t *cr, GameState *game_state) {
+static void draw_maze(cairo_t *cr, GameState *game_state, double cell_width, double cell_height) {
     for (int y = 0; y < game_state->maze_height; y++) {
         for (int x = 0; x < game_state->maze_width; x++) {
-            int cell = game_state->maze[y][x];
+            double draw_x = x * cell_width;
+            double draw_y = y * cell_height;
 
-            int draw_x = x * CELL_SIZE + MAZE_OFFSET_X;
-            int draw_y = y * CELL_SIZE + MAZE_OFFSET_Y;
-
-            if (cell == WALL) {
+            if (game_state->maze[y][x] == WALL) {
+                // Wand zeichnen
                 cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);
-                cairo_rectangle(cr, draw_x, draw_y, CELL_SIZE, CELL_SIZE);
+                cairo_rectangle(cr, draw_x, draw_y, cell_width, cell_height);
                 cairo_fill(cr);
                 cairo_set_source_rgb(cr, 0, 0, 0);
                 cairo_set_line_width(cr, 1);
-                cairo_rectangle(cr, draw_x, draw_y, CELL_SIZE, CELL_SIZE);
+                cairo_rectangle(cr, draw_x, draw_y, cell_width, cell_height);
                 cairo_stroke(cr);
-            } else if (cell == TRAP) {
+            } else if (game_state->maze[y][x] == TRAP) {
+                // Falle zeichnen
                 cairo_set_source_rgb(cr, 1, 0, 0);
-                cairo_arc(cr, draw_x + 20, draw_y + 20, 10, 0, 2 * G_PI);
+                cairo_arc(cr, draw_x + cell_width/2, draw_y + cell_height/2, 
+                         fmin(cell_width, cell_height)/3, 0, 2 * M_PI);
                 cairo_fill(cr);
             }
         }
     }
 }
 
-/**
- * Draws the player using the loaded sprite.
- * If no sprite is loaded, nothing is drawn.
- */
-static void draw_player(cairo_t *cr, const Player *player) {
+static void draw_player(cairo_t *cr, const Player *player, double cell_width, double cell_height) {
     if (!player->sprite_sheet) return;
 
-    int sprite_x = 0;
-    int sprite_y = 0;
+    // Spielerposition in Zellkoordinaten berechnen
+    double player_x = (player->x - MAZE_OFFSET_X) / (double)CELL_SIZE * cell_width;
+    double player_y = (player->y - MAZE_OFFSET_Y) / (double)CELL_SIZE * cell_height;
+    
+    // Skalierte Spielergröße
+    double player_size = fmin(cell_width, cell_height) * 0.8;
 
+    // Sprite-Ausschnitt basierend auf Blickrichtung
+    int sprite_x = 0, sprite_y = 0;
     switch (player->facing_direction) {
-        //oben
-        case 0:
-            sprite_x = 0;
-            sprite_y = 0;
-            break;
-        //links
-        case 1:
-            sprite_x = 0;
-            sprite_y = 24;
-            break;
-        //unten
-        case 2:
-            sprite_x = 0;
-            sprite_y = 48;
-            break;
-        //rechts
-        default:
-            sprite_x = 0;
-            sprite_y = 24;
-            break;
+        case 0: sprite_y = 0; break;   // oben
+        case 1: sprite_y = 24; break;  // links
+        case 2: sprite_y = 48; break;  // unten
+        default: sprite_y = 24; break; // rechts
     }
 
-    cairo_surface_t *sprite = cairo_surface_create_for_rectangle(player->sprite_sheet,  sprite_x, sprite_y, 24, 24);
-    cairo_set_source_surface(cr, sprite, player->x, player->y);
+    // Sprite skalieren und zeichnen
+    cairo_save(cr);
+    cairo_translate(cr, player_x + cell_width/2 - player_size/2, 
+                    player_y + cell_height/2 - player_size/2);
+    cairo_scale(cr, player_size/24.0, player_size/24.0);
+    
+    cairo_surface_t *sprite = cairo_surface_create_for_rectangle(
+        player->sprite_sheet, sprite_x, sprite_y, 24, 24);
+    cairo_set_source_surface(cr, sprite, 0, 0);
     cairo_paint(cr);
     cairo_surface_destroy(sprite);
+    cairo_restore(cr);
 }
 
-/**
- * Displays the "GAME OVER" screen if the player has no lives left.
- * Also shows a hint to press ENTER to restart.
- */
-static void draw_game_over(cairo_t *cr, GameState *game_state) {
-    if (game_state->lives <= 0) {
-        cairo_set_source_rgb(cr, 1, 0, 0); // red
-        cairo_select_font_face(cr, "Arial", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-        cairo_set_font_size(cr, 40);
-        const char *text = "GAME OVER";
-
-        cairo_text_extents_t extents;
-        cairo_text_extents(cr, text, &extents);
-        double x = (WINDOW_WIDTH - extents.width) / 2.0;
-        double y = WINDOW_HEIGHT / 2.0;
-        cairo_move_to(cr, x, y);
-        cairo_show_text(cr, text);
-
-        cairo_set_font_size(cr, 24);
-        const char *hint = "Press ENTER to Restart";
-        cairo_text_extents(cr, hint, &extents);
-        double hint_x = (WINDOW_WIDTH - extents.width) / 2.0;
-        double hint_y = y + 40;
-        cairo_move_to(cr, hint_x, hint_y);
-        cairo_show_text(cr, hint);
-    }
-}
-
-/**
- * Draws the player's remaining lives as small red bars at the top-left corner.
- */
-static void draw_lives(cairo_t *cr, GameState *game_state) {
-    cairo_set_source_rgb(cr, 1, 0, 0); // red
-    int width = 30, height = 10, padding = 10;
-    int x = padding;
-    int y = 20; // top left
-
+static void draw_game_over(cairo_t *cr, int width, int height) {
+    cairo_set_source_rgb(cr, 1, 0, 0);
     cairo_select_font_face(cr, "Arial", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-    cairo_set_font_size(cr, 18);
-    cairo_move_to(cr, x, y);
+    
+    // "GAME OVER" Text
+    cairo_set_font_size(cr, 40);
+    const char *text = "GAME OVER";
+    cairo_text_extents_t extents;
+    cairo_text_extents(cr, text, &extents);
+    cairo_move_to(cr, (width - extents.width)/2, height/2);
+    cairo_show_text(cr, text);
+
+    // Hinweis Text
+    cairo_set_font_size(cr, 24);
+    const char *hint = "Press ENTER to Restart";
+    cairo_text_extents(cr, hint, &extents);
+    cairo_move_to(cr, (width - extents.width)/2, height/2 + 40);
+    cairo_show_text(cr, hint);
+}
+
+static void draw_lives(cairo_t *cr, int lives, double width, double height) {
+    double life_width = width * 0.05;
+    double life_height = height * 0.02;
+    double padding = width * 0.01;
+    double start_x = width * 0.02;
+    double start_y = height * 0.05;
+
+    cairo_set_source_rgb(cr, 1, 0, 0);
+    cairo_select_font_face(cr, "Arial", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
+    cairo_set_font_size(cr, height * 0.03);
+    cairo_move_to(cr, start_x, start_y);
     cairo_show_text(cr, "Lives:");
 
-    for (int i = 0; i < game_state->lives; i++) {
-        cairo_rectangle(cr, x + 60 + i * (width + padding), y + 10, width, height);
+    for (int i = 0; i < lives; i++) {
+        cairo_rectangle(cr, 
+            start_x + (life_width + padding) * (i + 3), 
+            start_y - life_height, 
+            life_width, 
+            life_height);
         cairo_fill(cr);
     }
 }
 
-
-
-
-
-/**
- * Main rendering function.
- * Called by GTK to draw:
- * - Background
- * - Maze
- * - Player
- * - Game Over overlay (if applicable)
- * - Lives display
- */
 gboolean draw_callback(GtkWidget *drawing_area, cairo_t *cr, gpointer user_data) {
     GameState *game_state = (GameState *)user_data;
-
-    // Hintergrund
-    cairo_set_source_rgb(cr, 0.9, 0.9, 0.9); // hellgrau
-    cairo_paint(cr);
 
     // Fenstergröße ermitteln
     GtkAllocation alloc;
@@ -146,23 +113,27 @@ gboolean draw_callback(GtkWidget *drawing_area, cairo_t *cr, gpointer user_data)
     int width = alloc.width;
     int height = alloc.height;
 
-    // Ursprüngliche Spielfeldgröße berechnen
-    int maze_pixel_width = game_state->maze_width * CELL_SIZE;
-    int maze_pixel_height = game_state->maze_height * CELL_SIZE;
+    // Hintergrund
+    cairo_set_source_rgb(cr, 0.9, 0.9, 0.9);
+    cairo_paint(cr);
 
-    // Skalierungsfaktor berechnen
-    double scale_x = (double)width / maze_pixel_width;
-    double scale_y = (double)height / maze_pixel_height;
-    double scale = fmin(scale_x, scale_y);  // gleichmäßig skalieren
+    // Zellgröße berechnen
+    double cell_width = (double)width / game_state->maze_width;
+    double cell_height = (double)height / game_state->maze_height;
 
-    // Kontext skalieren
-    cairo_scale(cr, scale, scale);
+    // Labyrinth zeichnen
+    draw_maze(cr, game_state, cell_width, cell_height);
 
-    // Maze + Spielbestandteile zeichnen
-    draw_maze(cr, game_state);
-    draw_player(cr, &game_state->player);
-    draw_game_over(cr, game_state);
-    draw_lives(cr, game_state);
+    // Spieler zeichnen
+    draw_player(cr, &game_state->player, cell_width, cell_height);
+
+    // Leben anzeigen
+    draw_lives(cr, game_state->lives, width, height);
+
+    // Game Over anzeigen falls nötig
+    if (game_state->lives <= 0) {
+        draw_game_over(cr, width, height);
+    }
 
     return FALSE;
 }
