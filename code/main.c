@@ -3,8 +3,6 @@
 #include "draw.h"
 #include "input.h"
 
-
-
 /*
 This function starts the App and reacts on events untill window is closed
 */
@@ -38,8 +36,8 @@ int main(int argc, char **argv) {
         return 1;
     }
     const char *maze_filename = argv[1];
-
 */
+
     GtkApplication *app;
     int status;
 
@@ -48,40 +46,33 @@ int main(int argc, char **argv) {
     gs.pressed_keys = calloc(gs.num_pressed_keys, sizeof(int)); //Memory allocation for which key is pressed
     gs.maze = NULL;
     gs.original_maze = NULL;
-    
- 
-    
-    gs.player.sprite_sheet = cairo_image_surface_create_from_png("../assets/hero.png");
-    gs.player.sprite = cairo_surface_create_for_rectangle (gs.player.sprite_sheet ,96,0,32,32);
-    
+
+    // Sprite Sheet laden
+    gs.player.sprite_sheet = cairo_image_surface_create_from_png("../assets/slime.png");
+
+    // Anfangsrichtung: nach unten (S)
+    gs.player.facing_direction = 2;
+
+    // Start-Sprite setzen: nach unten (0,48)
+    gs.player.sprite = cairo_surface_create_for_rectangle(gs.player.sprite_sheet, 0, 48, 24, 24);
     
     if (cairo_surface_status(gs.player.sprite) != CAIRO_STATUS_SUCCESS) {
-    	fprintf(stderr, "Konnte Sprite-Bild nicht laden!\n");
-    
-    return 1;
-}
-
-
-   
-     
-/*
-    if (!load_maze_from_file(&gs, maze_filename)) {
-        fprintf(stderr, "Konnte Labirinth aus folgendem File nicht laden: %s\n", maze_filename);
-        free(gs.pressed_keys);
+        fprintf(stderr, "Konnte Sprite-Bild nicht laden!\n");
         return 1;
     }
- */  
+
+    // Labyrinth laden
     load_maze_from_file(&gs, "maze.txt"); // Workaround due to error message mentionen in line *35*
 
     app = gtk_application_new("org.maze.app", G_APPLICATION_FLAGS_NONE);
     g_signal_connect(app, "activate", G_CALLBACK(activate), &gs); // Connects activate signal with callback function
-    
-        status = g_application_run(G_APPLICATION(app), argc, argv);
+
+    status = g_application_run(G_APPLICATION(app), argc, argv);
 
     free(gs.pressed_keys); 
     free_maze(&gs);
 
-    // here: free sprite memory
+    // Sprite freigeben
     if (gs.player.sprite) {
         cairo_surface_destroy(gs.player.sprite);
     }
@@ -91,12 +82,6 @@ int main(int argc, char **argv) {
 
     g_object_unref(app);
     return status;
-
-    
-    
-    free(gs.pressed_keys); 
-    free_maze(&gs);
-    g_object_unref(app);
-    return status;
 }
+
 

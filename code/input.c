@@ -82,6 +82,7 @@ This function detects:
 - Checks for collision
 - Refreshes current game state and the lives display
 */
+
 gboolean update_callback(GtkWidget *widget, GdkFrameClock *clock, gpointer user_data) {
     GameState *gs = (GameState *)user_data; // Getting current game state
     static gint64 prev_time = 0;
@@ -109,10 +110,22 @@ gboolean update_callback(GtkWidget *widget, GdkFrameClock *clock, gpointer user_
     float speed = 300.0f * dt; //  Scaling speed
 
     // Keys for movement in upper and lower case
-    if (gs->pressed_keys['w'] || gs->pressed_keys['W']) dy -= speed;
-    if (gs->pressed_keys['s'] || gs->pressed_keys['S']) dy += speed;
-    if (gs->pressed_keys['a'] || gs->pressed_keys['A']) dx -= speed;
-    if (gs->pressed_keys['d'] || gs->pressed_keys['D']) dx += speed;
+    if (gs->pressed_keys['w'] || gs->pressed_keys['W']) {
+        dy -= speed;
+        gs->player.facing_direction = 0; // up
+    }
+    if (gs->pressed_keys['s'] || gs->pressed_keys['S']) {
+        dy += speed;
+        gs->player.facing_direction = 2; // down
+    }
+    if (gs->pressed_keys['a'] || gs->pressed_keys['A']) {
+        dx -= speed;
+        gs->player.facing_direction = 1; // left
+    }
+    if (gs->pressed_keys['d'] || gs->pressed_keys['D']) {
+        dx += speed;
+        gs->player.facing_direction = 3; // right
+    }
 
     // Calculate new position and check for wall collisions
     float new_x = gs->player.x + dx;
@@ -136,11 +149,29 @@ gboolean update_callback(GtkWidget *widget, GdkFrameClock *clock, gpointer user_
     } else if (!in_trap) {
         gs->trap_visited = 0;
     }
+    
+    // Update sprite based on facing direction
+   int sprite_x = 0;
+   int sprite_y = 0;
+
+    switch (gs->player.facing_direction) {
+    case 0: sprite_x = 0; sprite_y = 0; break;   // up
+    case 1: sprite_x = 0; sprite_y = 24; break;  // left
+    case 2: sprite_x = 0; sprite_y = 48; break;  // down
+    case 3: sprite_x = 0; sprite_y = 24; break;  // right
+    }
+
+    if (gs->player.sprite) {
+    cairo_surface_destroy(gs->player.sprite);
+    }
+    gs->player.sprite = cairo_surface_create_for_rectangle(gs->player.sprite_sheet, sprite_x, sprite_y, 24, 24);
+
 
     // Request widget redraw
     gtk_widget_queue_draw(widget);
     return G_SOURCE_CONTINUE;
-}
+    }
+
 
 
 

@@ -37,9 +37,34 @@ static void draw_maze(cairo_t *cr, GameState *game_state) {
  * If no sprite is loaded, nothing is drawn.
  */
 static void draw_player(cairo_t *cr, const Player *player) {
-    if (!player->sprite) return;
-    cairo_set_source_surface(cr, player->sprite, player->x, player->y);
+    if (!player->sprite_sheet) return;
+
+    int sprite_x = 0;
+    int sprite_y = 0;
+
+    switch (player->facing_direction) {
+        case 0:
+            sprite_x = 0;
+            sprite_y = 0;
+            break;
+        case 1:
+            sprite_x = 0;
+            sprite_y = 72;
+            break;
+        case 2:
+            sprite_x = 0;
+            sprite_y = 48;
+            break;
+        default:
+            sprite_x = 24;
+            sprite_y = 0;
+            break;
+    }
+
+    cairo_surface_t *sprite = cairo_surface_create_for_rectangle(player->sprite_sheet, sprite_x, sprite_y, 24, 24);
+    cairo_set_source_surface(cr, sprite, player->x, player->y);
     cairo_paint(cr);
+    cairo_surface_destroy(sprite);
 }
 
 /**
@@ -112,8 +137,6 @@ gboolean draw_callback(GtkWidget *drawing_area, cairo_t *cr, gpointer user_data)
 
     return FALSE;
 }
-
-
 
 
 

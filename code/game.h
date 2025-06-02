@@ -25,7 +25,9 @@ typedef struct {
     float x, y;
     cairo_surface_t *sprite_sheet;
     cairo_surface_t *sprite;
+    int facing_direction; // 0 = up, 1 = left, 2 = down, 3 = right
 } Player;
+
 
 // Struct for game logic
 typedef struct {
