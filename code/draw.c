@@ -44,25 +44,29 @@ static void draw_player(cairo_t *cr, const Player *player) {
     int sprite_y = 0;
 
     switch (player->facing_direction) {
+        //oben
         case 0:
             sprite_x = 0;
             sprite_y = 0;
             break;
+        //links
         case 1:
             sprite_x = 0;
-            sprite_y = 72;
+            sprite_y = 24;
             break;
+        //unten
         case 2:
             sprite_x = 0;
             sprite_y = 48;
             break;
+        //rechts
         default:
-            sprite_x = 24;
-            sprite_y = 0;
+            sprite_x = 0;
+            sprite_y = 24;
             break;
     }
 
-    cairo_surface_t *sprite = cairo_surface_create_for_rectangle(player->sprite_sheet, sprite_x, sprite_y, 24, 24);
+    cairo_surface_t *sprite = cairo_surface_create_for_rectangle(player->sprite_sheet,  sprite_x, sprite_y, 24, 24);
     cairo_set_source_surface(cr, sprite, player->x, player->y);
     cairo_paint(cr);
     cairo_surface_destroy(sprite);
