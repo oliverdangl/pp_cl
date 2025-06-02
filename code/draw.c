@@ -1,5 +1,6 @@
 #include "draw.h"
 #include "game.h" // For MAZE_OFFSET_X and MAZE_OFFSET_Y
+#include <math.h>
 
 /**
  * Draws the maze based on the current game state.
@@ -115,6 +116,10 @@ static void draw_lives(cairo_t *cr, GameState *game_state) {
     }
 }
 
+
+
+
+
 /**
  * Main rendering function.
  * Called by GTK to draw:
@@ -127,9 +132,29 @@ static void draw_lives(cairo_t *cr, GameState *game_state) {
 gboolean draw_callback(GtkWidget *drawing_area, cairo_t *cr, gpointer user_data) {
     GameState *game_state = (GameState *)user_data;
 
-    cairo_set_source_rgb(cr, 0.9, 0.9, 0.9); // light grey background
+    // Hintergrund
+    cairo_set_source_rgb(cr, 0.9, 0.9, 0.9); // hellgrau
     cairo_paint(cr);
 
+    // Fenstergröße ermitteln
+    GtkAllocation alloc;
+    gtk_widget_get_allocation(drawing_area, &alloc);
+    int width = alloc.width;
+    int height = alloc.height;
+
+    // Ursprüngliche Spielfeldgröße berechnen
+    int maze_pixel_width = game_state->maze_width * CELL_SIZE;
+    int maze_pixel_height = game_state->maze_height * CELL_SIZE;
+
+    // Skalierungsfaktor berechnen
+    double scale_x = (double)width / maze_pixel_width;
+    double scale_y = (double)height / maze_pixel_height;
+    double scale = fmin(scale_x, scale_y);  // gleichmäßig skalieren
+
+    // Kontext skalieren
+    cairo_scale(cr, scale, scale);
+
+    // Maze + Spielbestandteile zeichnen
     draw_maze(cr, game_state);
     draw_player(cr, &game_state->player);
     draw_game_over(cr, game_state);
@@ -137,6 +162,3 @@ gboolean draw_callback(GtkWidget *drawing_area, cairo_t *cr, gpointer user_data)
 
     return FALSE;
 }
-
-
-

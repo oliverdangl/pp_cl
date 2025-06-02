@@ -8,4 +8,4 @@ maze_game_SOURCES = main.c input.c game.c draw.c
 maze_game_CFLAGS = $(GTK_CFLAGS)#Compile flags
 
 #maze_game_LDFLAGS = `pkg-config --libs gtk+-3.0` #Tells linker which librarys are needed
-maze_game_LDADD = $(GTK_LIBS) #Linker flags
+maze_game_LDADD = $(GTK_LIBS) -lm #Linker flags 

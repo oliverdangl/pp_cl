@@ -18,13 +18,13 @@ static void activate(GtkApplication *app, gpointer user_data) {
 
     // Keyboard event for key press
     g_signal_connect(window, "key-press-event", G_CALLBACK(on_key_press), gs);
-    
+
     // Keyboard event for key release
     g_signal_connect(window, "key-release-event", G_CALLBACK(on_key_release), gs);
-    
+
     // Event for drawing area
     g_signal_connect(area, "draw", G_CALLBACK(draw_callback), gs);
-    gtk_widget_add_tick_callback(area, update_callback, gs, NULL); // For updating 
+    gtk_widget_add_tick_callback(area, update_callback, gs, NULL); // For updating
 
     gtk_widget_show_all(window);
 }
@@ -55,7 +55,7 @@ int main(int argc, char **argv) {
 
     // Start-Sprite setzen: nach unten (0,48)
     gs.player.sprite = cairo_surface_create_for_rectangle(gs.player.sprite_sheet, 0, 48, 24, 24);
-    
+
     if (cairo_surface_status(gs.player.sprite) != CAIRO_STATUS_SUCCESS) {
         fprintf(stderr, "Konnte Sprite-Bild nicht laden!\n");
         return 1;
@@ -69,7 +69,7 @@ int main(int argc, char **argv) {
 
     status = g_application_run(G_APPLICATION(app), argc, argv);
 
-    free(gs.pressed_keys); 
+    free(gs.pressed_keys);
     free_maze(&gs);
 
     // Sprite freigeben
@@ -83,5 +83,3 @@ int main(int argc, char **argv) {
     g_object_unref(app);
     return status;
 }
-
-
