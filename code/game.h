@@ -53,6 +53,7 @@ bool load_maze_from_file(GameState *game_state, const char *filename);
 void reset_game(GameState *game_state);
 void free_maze(GameState *game_state);
 
+
 #endif
 
 

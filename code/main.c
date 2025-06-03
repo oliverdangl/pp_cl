@@ -63,6 +63,7 @@ int main(int argc, char **argv) {
 
     // Labyrinth laden
     load_maze_from_file(&gs, "maze.txt"); // Workaround due to error message mentionen in line *35*
+    
 
     app = gtk_application_new("org.maze.app", G_APPLICATION_FLAGS_NONE);
     g_signal_connect(app, "activate", G_CALLBACK(activate), &gs); // Connects activate signal with callback function
