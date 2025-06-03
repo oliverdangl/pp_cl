@@ -4,8 +4,10 @@
 #include <cairo.h>
 #include <stdbool.h>
 
-#define WINDOW_WIDTH 1000
-#define WINDOW_HEIGHT 800
+//values for same proportions
+#define WINDOW_WIDTH 1200 
+#define WINDOW_HEIGHT 660
+
 #define CELL_SIZE 40
 #define MAX_LIVES 3
 

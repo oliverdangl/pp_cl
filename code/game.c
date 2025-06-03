@@ -44,10 +44,10 @@ bool load_maze_from_file(GameState *game_state, const char *filename) {
         }
     }
 
-    // Set player position based on maze offset
-    
-    game_state->player.x = MAZE_OFFSET_X + CELL_SIZE + 4;
-    game_state->player.y = MAZE_OFFSET_Y + CELL_SIZE + 4;
+    //Playerspawn location [1][1]
+    game_state->player.x = MAZE_OFFSET_X + CELL_SIZE * 1 + CELL_SIZE / 2.0f;
+    game_state->player.y = MAZE_OFFSET_Y + CELL_SIZE * 1 + CELL_SIZE / 2.0f;
+
     game_state->lives = MAX_LIVES;
     game_state->trap_visited = 0;
 
@@ -63,9 +63,9 @@ void reset_game(GameState *game_state) {
     game_state->lives = MAX_LIVES;
     game_state->trap_visited = 0;
 
-    // Reset player position with offset
-    game_state->player.x = MAZE_OFFSET_X + CELL_SIZE + 4;
-    game_state->player.y = MAZE_OFFSET_Y + CELL_SIZE + 4;
+    //Player respawn location [1][1]
+    game_state->player.x = MAZE_OFFSET_X + CELL_SIZE * 1 + CELL_SIZE / 2.0f;
+    game_state->player.y = MAZE_OFFSET_Y + CELL_SIZE * 1 + CELL_SIZE / 2.0f;
 
     for (int y = 0; y < game_state->maze_height; y++) {
         for (int x = 0; x < game_state->maze_width; x++) {

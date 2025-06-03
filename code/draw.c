@@ -32,8 +32,9 @@ static void draw_player(cairo_t *cr, const Player *player, double cell_width, do
     if (!player->sprite_sheet) return;
 
     // Spielerposition in Zellkoordinaten berechnen
-    double player_x = (player->x - MAZE_OFFSET_X) / (double)CELL_SIZE * cell_width;
-    double player_y = (player->y - MAZE_OFFSET_Y) / (double)CELL_SIZE * cell_height;
+    double player_x = (player->x - MAZE_OFFSET_X) / CELL_SIZE * cell_width - cell_width / 2;
+    double player_y = (player->y - MAZE_OFFSET_Y) / CELL_SIZE * cell_height - cell_height / 2;
+
     
     // Skalierte Spielergröße
     double player_size = fmin(cell_width, cell_height) * 0.8;

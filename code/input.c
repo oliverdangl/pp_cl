@@ -5,36 +5,37 @@
  * Checks for collision between player's hitbox and walls in the maze
  */
 static int is_wall_collision(GameState *game_state, float x, float y) {
-    // Disctance to the border of the hitbox
-    const float margin =8.0f; // 32 - 8*2 = 16x16 hitbox
+    const float hitbox_half = 8.0f; // 16x16 Hitbox, also Radius = 8
 
-    // Calculating hitbox borders
-    float left = x + margin;
-    float right = x + 32.0f - margin;
-    float top = y + margin;
-    float bottom = y + 32.0f - margin;
+    // Mittelpunkt des Spielers ist x/y, daher:
+    float left = x - hitbox_half;
+    float right = x + hitbox_half;
+    float top = y - hitbox_half;
+    float bottom = y + hitbox_half;
 
-    // Adjusting for maze offset
+    // Maze-Zellen berechnen
     int left_cell = (int)((left - MAZE_OFFSET_X) / CELL_SIZE);
     int right_cell = (int)((right - MAZE_OFFSET_X) / CELL_SIZE);
     int top_cell = (int)((top - MAZE_OFFSET_Y) / CELL_SIZE);
     int bottom_cell = (int)((bottom - MAZE_OFFSET_Y) / CELL_SIZE);
 
-    // Collision with game border
+    // Spielfeldgrenzen prüfen
     if (left_cell < 0 || right_cell >= game_state->maze_width ||
         top_cell < 0 || bottom_cell >= game_state->maze_height) {
         return 1;
     }
 
-    // Checking for collision with wall
+    // Wandkollision prüfen
     if (game_state->maze[top_cell][left_cell] == WALL ||
         game_state->maze[top_cell][right_cell] == WALL ||
         game_state->maze[bottom_cell][left_cell] == WALL ||
         game_state->maze[bottom_cell][right_cell] == WALL) {
         return 1;
     }
-    return 0; // No collision
+
+    return 0;
 }
+
 
 
 /*
