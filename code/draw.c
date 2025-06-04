@@ -31,29 +31,48 @@ static void draw_maze(cairo_t *cr, GameState *game_state, double cell_width, dou
 static void draw_player(cairo_t *cr, const Player *player, double cell_width, double cell_height) {
     if (!player->sprite_sheet) return;
 
-    // Spielerposition in Zellkoordinaten berechnen
+    // Spielerposition berechnen
     double player_x = (player->x - MAZE_OFFSET_X) / CELL_SIZE * cell_width - cell_width / 2;
     double player_y = (player->y - MAZE_OFFSET_Y) / CELL_SIZE * cell_height - cell_height / 2;
-
-    
-    // Skalierte Spielergröße
     double player_size = fmin(cell_width, cell_height) * 0.8;
 
-    // Sprite-Ausschnitt basierend auf Blickrichtung
-    int sprite_x = 0, sprite_y = 0;
+    // Sprite-Ausschnitt
+    int sprite_x = 0;
+    int sprite_y = 0;
+    gboolean flip_horizontal = FALSE;
+
     switch (player->facing_direction) {
-        case 0: sprite_y = 0; break;   // oben
-        case 1: sprite_y = 24; break;  // links
-        case 2: sprite_y = 48; break;  // unten
-        default: sprite_y = 24; break; // rechts
+        case 0:  // oben
+            sprite_y = 0;
+            break;
+        case 1:  // links → benutze Sprite von rechts, aber gespiegelt
+            sprite_y = 24;   // Y-Position deines „rechts“-Sprites
+            flip_horizontal = TRUE;
+            break;
+        case 2:  // unten
+            sprite_y = 48;
+            break;
+        case 3:  // rechts
+            sprite_y = 24;
+            break;
+        default:
+            sprite_y = 24;
+            break;
     }
 
-    // Sprite skalieren und zeichnen
+    // Zeichnen
     cairo_save(cr);
-    cairo_translate(cr, player_x + cell_width/2 - player_size/2, 
-                    player_y + cell_height/2 - player_size/2);
-    cairo_scale(cr, player_size/24.0, player_size/24.0);
-    
+    cairo_translate(cr, player_x + cell_width / 2, player_y + cell_height / 2);
+
+    if (flip_horizontal) {
+        // Flip horizontal für "links"
+        cairo_scale(cr, -player_size / 24.0, player_size / 24.0);
+        cairo_translate(cr, -12, -12);  // Zentrum korrigieren
+    } else {
+        cairo_scale(cr, player_size / 24.0, player_size / 24.0);
+        cairo_translate(cr, -12, -12);
+    }
+
     cairo_surface_t *sprite = cairo_surface_create_for_rectangle(
         player->sprite_sheet, sprite_x, sprite_y, 24, 24);
     cairo_set_source_surface(cr, sprite, 0, 0);
@@ -61,6 +80,7 @@ static void draw_player(cairo_t *cr, const Player *player, double cell_width, do
     cairo_surface_destroy(sprite);
     cairo_restore(cr);
 }
+
 
 static void draw_game_over(cairo_t *cr, int width, int height) {
     cairo_set_source_rgb(cr, 1, 0, 0);
