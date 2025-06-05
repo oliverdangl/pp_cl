@@ -35,7 +35,7 @@ static void activate(GtkApplication *app, gpointer user_data) {
 int main(int argc, char **argv) {
 
 
-    parse_args(argc, argv, &opts);
+    int arg_index = parse_args(argc, argv, &opts);
     
     printf("DEBUG: window_width  = %d\n", opts.window_width);
     printf("DEBUG: window_height = %d\n", opts.window_height);
@@ -75,7 +75,7 @@ int main(int argc, char **argv) {
     app = gtk_application_new("org.maze.app", G_APPLICATION_FLAGS_NONE);
     g_signal_connect(app, "activate", G_CALLBACK(activate), &gs); // Connects activate signal with callback function
 
-    status = g_application_run(G_APPLICATION(app), argc, argv);
+    status = g_application_run(G_APPLICATION(app), argc - arg_index, argv + arg_index);
 
     free(gs.pressed_keys);
     free_maze(&gs);

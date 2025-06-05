@@ -20,6 +20,6 @@ extern  struct argp_option options[];
 error_t parse_opt(int key, char *arg, struct argp_state *state);
 extern  struct argp argp;
 
-void parse_args(int argc, char **argv, GameOptions *opts);
+int parse_args(int argc, char **argv, GameOptions *opts);
 
 #endif

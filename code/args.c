@@ -11,9 +11,9 @@ char doc[]      = "Maze Game -- Beispiel zur Argumenterkennung mit argp";
 
 
 struct argp_option options[] = {
-    { "width", 'w', "WIDTH", 0, "Fensterbreite (Default: 1200)" },
+    { "width",  'w', "WIDTH", 0, "Fensterbreite (Default: 1200)" },
     { "height", 'h', "HEIGHT", 0, "Fensterhöhe (Default: 660)" },
-    { "maze", 'm', "FILE", 0, "Pfad zur Maze-Datei (Default: \"maze.txt\")" },
+    { "maze",   'm', "FILE",  0, "Pfad zur Maze-Datei (Default: \"maze.txt\")" },
     { 0 }
 };
 
@@ -41,14 +41,15 @@ struct argp argp = { options, parse_opt, args_doc, doc };
 
 
 //Initialises default values and calls 
-void parse_args(int argc, char **argv, GameOptions *opts) {
+int parse_args(int argc, char **argv, GameOptions *opts) {
     //Setting default values
     opts->window_width  = WINDOW_WIDTH;
     opts->window_height = WINDOW_HEIGHT;
     opts->maze_file     = "maze.txt";
     
-
-    argp_parse(&argp, argc, argv, 0, 0, opts);
+    int index;
+    argp_parse(&argp, argc, argv, 0, &index, opts);
+    return index;
 }
 
 
