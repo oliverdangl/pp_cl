@@ -45,7 +45,7 @@ int parse_args(int argc, char **argv, GameOptions *opts) {
     //Setting default values
     opts->window_width  = WINDOW_WIDTH;
     opts->window_height = WINDOW_HEIGHT;
-    opts->maze_file     = "maze.txt";
+    opts->maze_file     = "../maps/maze.txt";
     
     int index;
     argp_parse(&argp, argc, argv, 0, &index, opts);
