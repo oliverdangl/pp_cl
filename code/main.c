@@ -2,6 +2,9 @@
 #include "game.h"
 #include "draw.h"
 #include "input.h"
+#include "args.h"
+
+static GameOptions opts;
 
 /*
 This function starts the App and reacts on events untill window is closed
@@ -11,7 +14,7 @@ static void activate(GtkApplication *app, gpointer user_data) {
 
     GtkWidget *window = gtk_application_window_new(app); // Creates new window
     gtk_window_set_title(GTK_WINDOW(window), "Maze Game"); // Sets title for window
-    gtk_window_set_default_size(GTK_WINDOW(window), WINDOW_WIDTH, WINDOW_HEIGHT);
+    gtk_window_set_default_size(GTK_WINDOW(window), opts.window_width, opts.window_height);
 
     GtkWidget *area = gtk_drawing_area_new(); // Creates area to draw
     gtk_container_add(GTK_CONTAINER(window), area);
@@ -30,14 +33,15 @@ static void activate(GtkApplication *app, gpointer user_data) {
 }
 
 int main(int argc, char **argv) {
-/* Error when implementing : "(maze_game:2433): GLib-GIO-CRITICAL **: 16:07:37.715: This application can not open files."
-    if(argc < 2){
-        fprintf(stderr, "Bitte Karte mit als Argument übergeben!\n");
-        return 1;
-    }
-    const char *maze_filename = argv[1];
-*/
 
+
+    parse_args(argc, argv, &opts);
+    
+    printf("DEBUG: window_width  = %d\n", opts.window_width);
+    printf("DEBUG: window_height = %d\n", opts.window_height);
+    printf("DEBUG: maze_file     = %s\n", opts.maze_file);
+    
+    
     GtkApplication *app;
     int status;
 
@@ -62,7 +66,10 @@ int main(int argc, char **argv) {
     }
 
     // Labyrinth laden
-    load_maze_from_file(&gs, "maze.txt"); // Workaround due to error message mentionen in line *35*
+    if (!load_maze_from_file(&gs, opts.maze_file)) {
+        fprintf(stderr, "Fehler beim Laden des Labyrinths \"%s\".\n", opts.maze_file);
+        return 1;
+    }
     
 
     app = gtk_application_new("org.maze.app", G_APPLICATION_FLAGS_NONE);
@@ -74,12 +81,9 @@ int main(int argc, char **argv) {
     free_maze(&gs);
 
     // Sprite freigeben
-    if (gs.player.sprite) {
-        cairo_surface_destroy(gs.player.sprite);
-    }
-    if (gs.player.sprite_sheet) {
-        cairo_surface_destroy(gs.player.sprite_sheet);
-    }
+    cairo_surface_destroy(gs.player.sprite);
+    cairo_surface_destroy(gs.player.sprite_sheet);
+    
 
     g_object_unref(app);
     return status;
