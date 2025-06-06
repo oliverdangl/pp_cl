@@ -1,14 +1,17 @@
 #include "draw.h"
 #include "game.h"
+#include "config.h"
 #include <math.h>
 
-static void draw_maze(cairo_t *cr, GameState *game_state, double cell_width, double cell_height) {
-    for (int y = 0; y < game_state->maze_height; y++) {
-        for (int x = 0; x < game_state->maze_width; x++) {
+
+
+void draw_maze(cairo_t *cr, const Maze *maze, double cell_width, double cell_height) {
+    for (int y = 0; y < maze->height; y++) {
+        for (int x = 0; x < maze->width; x++) {
             double draw_x = x * cell_width;
             double draw_y = y * cell_height;
 
-            if (game_state->maze[y][x] == WALL) {
+            if (maze->current[y][x] == CELL_WALL) {
                 // Wand zeichnen
                 cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);
                 cairo_rectangle(cr, draw_x, draw_y, cell_width, cell_height);
@@ -17,7 +20,7 @@ static void draw_maze(cairo_t *cr, GameState *game_state, double cell_width, dou
                 cairo_set_line_width(cr, 1);
                 cairo_rectangle(cr, draw_x, draw_y, cell_width, cell_height);
                 cairo_stroke(cr);
-            } else if (game_state->maze[y][x] == TRAP) {
+            } else if (maze->current[y][x] == CELL_TRAP) {
                 // Falle zeichnen
                 cairo_set_source_rgb(cr, 1, 0, 0);
                 cairo_arc(cr, draw_x + cell_width/2, draw_y + cell_height/2, 
@@ -28,12 +31,14 @@ static void draw_maze(cairo_t *cr, GameState *game_state, double cell_width, dou
     }
 }
 
-static void draw_player(cairo_t *cr, const Player *player, double cell_width, double cell_height) {
+void draw_player(cairo_t *cr, const PlayerState *player, double cell_width, double cell_height) {
     if (!player->sprite_sheet) return;
 
     // Spielerposition berechnen
-    double player_x = (player->x - MAZE_OFFSET_X) / CELL_SIZE * cell_width - cell_width / 2;
-    double player_y = (player->y - MAZE_OFFSET_Y) / CELL_SIZE * cell_height - cell_height / 2;
+    double normalized_x = (player->x - MAZE_OFFSET_X) / CELL_SIZE;
+    double normalized_y = (player->y - MAZE_OFFSET_Y) / CELL_SIZE;
+    double player_x = normalized_x * cell_width - (cell_width / 2);
+    double player_y = normalized_y * cell_height - (cell_height / 2);
     double player_size = fmin(cell_width, cell_height) * 0.8;
 
     // Sprite-Ausschnitt
@@ -41,18 +46,18 @@ static void draw_player(cairo_t *cr, const Player *player, double cell_width, do
     int sprite_y = 0;
     gboolean flip_horizontal = FALSE;
 
-    switch (player->facing_direction) {
-        case 0:  // oben
+    switch (player->facing) {
+        case DIR_UP:  // oben
             sprite_y = 0;
             break;
-        case 1:  // links → benutze Sprite von rechts, aber gespiegelt
+        case DIR_LEFT:  // links → benutze Sprite von rechts, aber gespiegelt
             sprite_y = 24;   // Y-Position deines „rechts“-Sprites
             flip_horizontal = TRUE;
             break;
-        case 2:  // unten
+        case DIR_DOWN:  // unten
             sprite_y = 48;
             break;
-        case 3:  // rechts
+        case DIR_RIGHT:  // rechts
             sprite_y = 24;
             break;
         default:
@@ -82,7 +87,7 @@ static void draw_player(cairo_t *cr, const Player *player, double cell_width, do
 }
 
 
-static void draw_game_over(cairo_t *cr, int width, int height) {
+void draw_game_over(cairo_t *cr, int width, int height) {
     cairo_set_source_rgb(cr, 1, 0, 0);
     cairo_select_font_face(cr, "Arial", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
     
@@ -102,7 +107,7 @@ static void draw_game_over(cairo_t *cr, int width, int height) {
     cairo_show_text(cr, hint);
 }
 
-static void draw_lives(cairo_t *cr, int lives, double width, double height) {
+void draw_lives(cairo_t *cr, int lives, double width, double height) {
     double life_width = width * 0.05;
     double life_height = height * 0.02;
     double padding = width * 0.01;
@@ -126,7 +131,9 @@ static void draw_lives(cairo_t *cr, int lives, double width, double height) {
 }
 
 gboolean draw_callback(GtkWidget *drawing_area, cairo_t *cr, gpointer user_data) {
-    GameState *game_state = (GameState *)user_data;
+    GameState *gs = (GameState *)user_data;
+    Maze *mz = &gs->maze;
+    PlayerState *pl = &gs->player;
 
     // Fenstergröße ermitteln
     GtkAllocation alloc;
@@ -139,20 +146,20 @@ gboolean draw_callback(GtkWidget *drawing_area, cairo_t *cr, gpointer user_data)
     cairo_paint(cr);
 
     // Zellgröße berechnen
-    double cell_width = (double)width / game_state->maze_width;
-    double cell_height = (double)height / game_state->maze_height;
+    double cell_width = (double)width / mz->width;
+    double cell_height = (double)height / mz->height;
 
     // Labyrinth zeichnen
-    draw_maze(cr, game_state, cell_width, cell_height);
+    draw_maze(cr, mz, cell_width, cell_height);
 
     // Spieler zeichnen
-    draw_player(cr, &game_state->player, cell_width, cell_height);
+    draw_player(cr, pl, cell_width, cell_height);
 
     // Leben anzeigen
-    draw_lives(cr, game_state->lives, width, height);
+    draw_lives(cr, pl->lives, width, height);
 
     // Game Over anzeigen falls nötig
-    if (game_state->lives <= 0) {
+    if (pl->lives <= 0) {
         draw_game_over(cr, width, height);
     }
 

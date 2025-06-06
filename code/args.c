@@ -1,9 +1,7 @@
-#include <string.h>
 #include <stdlib.h>
-#include <stdio.h>
 #include <argp.h>
 #include "args.h"
-#include "game.h"
+#include "config.h"
 
 char args_doc[] = " [--width WIDTH] [--height HEIGHT] [--maze FILE]";
 char doc[]      = "Maze Game -- Beispiel zur Argumenterkennung mit argp";
@@ -51,6 +49,7 @@ int parse_args(int argc, char **argv, GameOptions *opts) {
     argp_parse(&argp, argc, argv, 0, &index, opts);
     return index;
 }
+
 
 
 

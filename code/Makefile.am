@@ -1,7 +1,7 @@
 # Makefile.am for the Maze Game project
 
 bin_PROGRAMS = maze_game
-maze_game_SOURCES = main.c input.c game.c draw.c args.c
+maze_game_SOURCES = args.c draw.c input.c main.c maze.c player.c
 
 # Enable GNU extensions (for argp) and include GTK compiler flags
 maze_game_CFLAGS = $(GTK_CFLAGS)#Compile flags

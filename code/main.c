@@ -1,10 +1,17 @@
 #include <gtk/gtk.h>
-#include "game.h"
+#include <stdlib.h>
+#include <stdio.h>
+
+#include "config.h"
+#include "maze.h"
+#include "player.h"
 #include "draw.h"
 #include "input.h"
 #include "args.h"
+#include "game.h"
 
 static GameOptions opts;
+
 
 /*
 This function starts the App and reacts on events untill window is closed
@@ -32,26 +39,26 @@ int main(int argc, char **argv) {
     int arg_index = parse_args(argc, argv, &opts);
     
     //displaying values set when loading game
-    printf("DEBUG: window_width  = %d\n", opts.window_width);
-    printf("DEBUG: window_height = %d\n", opts.window_height);
-    printf("DEBUG: maze_file     = %s\n", opts.maze_file);
-    
+    printf("window_width  = %d\n", opts.window_width);
+    printf("window_height = %d\n", opts.window_height);
+    printf("maze_file     = %s\n", opts.maze_file);
     
     GtkApplication *app;
     int status;
-
     GameState gs;
+
     gs.num_pressed_keys = 256; //Keys on keyboard
     gs.pressed_keys = calloc(gs.num_pressed_keys, sizeof(int)); //Memory allocation for which key is pressed
-    gs.maze = NULL;
-    gs.original_maze = NULL;
+    gs.maze.current = NULL;
+    gs.maze.original = NULL;
 
     //sprite section
     gs.player.sprite_sheet = cairo_image_surface_create_from_png("../assets/slime.png");
     gs.player.sprite = cairo_surface_create_for_rectangle(gs.player.sprite_sheet, 0, 48, 24, 24); //startsprite values
 
     //loading maze
-    load_maze_from_file(&gs, opts.maze_file);
+    load_maze_from_file(&gs.maze, opts.maze_file);
+    spawn_player(&gs.player, &gs.maze);
    
     app = gtk_application_new("org.maze.app", G_APPLICATION_FLAGS_NONE);
     g_signal_connect(app, "activate", G_CALLBACK(activate), &gs); // Connects activate signal with callback function
@@ -59,7 +66,7 @@ int main(int argc, char **argv) {
 
     //seting allocated memory free
     free(gs.pressed_keys);
-    free_maze(&gs);
+    free_maze(&gs.maze);
     cairo_surface_destroy(gs.player.sprite);
     cairo_surface_destroy(gs.player.sprite_sheet);
     

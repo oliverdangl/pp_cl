@@ -1,35 +1,42 @@
 #include "input.h"
+#include <string.h>
+#include "config.h"
+#include "game.h"
+#include "maze.h"
+#include "player.h"
 
 
 /**
  * Checks for collision between player's hitbox and walls in the maze
  */
-static int is_wall_collision(GameState *game_state, float x, float y) {
+static int is_wall_collision(GameState *gs, float x, float y) {
     const float hitbox_half = 8.0f; // 16x16 Hitbox, also Radius = 8
 
-    // Mittelpunkt des Spielers ist x/y, daher:
+    //center of the player
     float left = x - hitbox_half;
     float right = x + hitbox_half;
     float top = y - hitbox_half;
     float bottom = y + hitbox_half;
 
-    // Maze-Zellen berechnen
+    //calculating maze cells
     int left_cell = (int)((left - MAZE_OFFSET_X) / CELL_SIZE);
     int right_cell = (int)((right - MAZE_OFFSET_X) / CELL_SIZE);
     int top_cell = (int)((top - MAZE_OFFSET_Y) / CELL_SIZE);
     int bottom_cell = (int)((bottom - MAZE_OFFSET_Y) / CELL_SIZE);
+    
+    Maze *mz = &gs->maze;
 
-    // Spielfeldgrenzen prüfen
-    if (left_cell < 0 || right_cell >= game_state->maze_width ||
-        top_cell < 0 || bottom_cell >= game_state->maze_height) {
+    //checking for maze borders
+    if (left_cell < 0 || right_cell >= mz->width ||
+        top_cell < 0 || bottom_cell >= mz->height) {
         return 1;
     }
 
-    // Wandkollision prüfen
-    if (game_state->maze[top_cell][left_cell] == WALL ||
-        game_state->maze[top_cell][right_cell] == WALL ||
-        game_state->maze[bottom_cell][left_cell] == WALL ||
-        game_state->maze[bottom_cell][right_cell] == WALL) {
+    //collision check with wall
+    if (mz->current[top_cell][left_cell] == CELL_WALL ||
+        mz->current[top_cell][right_cell] == CELL_WALL ||
+        mz->current[bottom_cell][left_cell] == CELL_WALL ||
+        mz->current[bottom_cell][right_cell] == CELL_WALL) {
         return 1;
     }
 
@@ -46,16 +53,19 @@ static int is_wall_collision(GameState *game_state, float x, float y) {
  * - Updates key state in the game state structure
 */
 gboolean on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data) {
-    GameState *game_state = (GameState *)user_data; // Refreshing current game state
+    GameState *gs = (GameState *)user_data; // Refreshing current game state
     
     // No lives left and Return pressed => reset game
-    if (game_state->lives <= 0 && event->keyval == GDK_KEY_Return) {
-        reset_game(game_state);
-        memset(game_state->pressed_keys, 0, game_state->num_pressed_keys * sizeof(int));
+    if (gs->player.lives <= 0 && event->keyval == GDK_KEY_Return) {
+        //reseting game and player respawn
+        reset_maze(&gs->maze);
+        spawn_player(&gs->player, &gs->maze);
+        
+        memset(gs->pressed_keys, 0, gs->num_pressed_keys * sizeof(int));
         return TRUE;
     }
 
-    game_state->pressed_keys[event->keyval] = 1;
+    gs->pressed_keys[event->keyval] = 1;
     return TRUE;
 }
 
@@ -67,12 +77,12 @@ gboolean on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
  * Returns: TRUE to indicate the event was handled
  */
 gboolean on_key_release(GtkWidget *widget, GdkEventKey *event, gpointer user_data) {
-    GameState *game_state = (GameState *)user_data; // Refreshing current game state
+    GameState *gs = (GameState *)user_data; // Refreshing current game state
     
-    if (game_state->lives <= 0)
+    if (gs->player.lives <= 0)
         return TRUE;
         
-    game_state->pressed_keys[event->keyval] = 0;
+    gs->pressed_keys[event->keyval] = 0;
     return TRUE;
 }
 
@@ -89,7 +99,7 @@ gboolean update_callback(GtkWidget *widget, GdkFrameClock *clock, gpointer user_
     static gint64 prev_time = 0;
 
     // If game over, freeze game 
-    if (gs->lives <= 0) {
+    if (gs->player.lives <= 0) {
         gtk_widget_queue_draw(widget);
         return G_SOURCE_CONTINUE;
     }
@@ -113,19 +123,19 @@ gboolean update_callback(GtkWidget *widget, GdkFrameClock *clock, gpointer user_
     // Keys for movement in upper and lower case
     if (gs->pressed_keys['w'] || gs->pressed_keys['W']) {
         dy -= speed;
-        gs->player.facing_direction = 0; // up
+        gs->player.facing = DIR_UP; // up
     }
     if (gs->pressed_keys['s'] || gs->pressed_keys['S']) {
         dy += speed;
-        gs->player.facing_direction = 2; // down
+        gs->player.facing = DIR_DOWN; // down
     }
     if (gs->pressed_keys['a'] || gs->pressed_keys['A']) {
         dx -= speed;
-        gs->player.facing_direction = 1; // left
+        gs->player.facing = DIR_LEFT; // left
     }
     if (gs->pressed_keys['d'] || gs->pressed_keys['D']) {
         dx += speed;
-        gs->player.facing_direction = 3; // right
+        gs->player.facing = DIR_RIGHT; // right
     }
 
     // Calculate new position and check for wall collisions
@@ -139,27 +149,33 @@ gboolean update_callback(GtkWidget *widget, GdkFrameClock *clock, gpointer user_
     }
 
     // Check if player is standing on a trap
-    int cell_x = (gs->player.x - MAZE_OFFSET_X) / CELL_SIZE;
-    int cell_y = (gs->player.y - MAZE_OFFSET_Y) / CELL_SIZE;
-    bool in_trap = gs->maze[cell_y][cell_x] == TRAP;
+    int cell_x = (int)(gs->player.x - MAZE_OFFSET_X) / CELL_SIZE;
+    int cell_y = (int)(gs->player.y - MAZE_OFFSET_Y) / CELL_SIZE;
+    Maze *mz = &gs->maze;
+    bool in_trap = mz->current[cell_y][cell_x] == CELL_TRAP;
 
     // Trap handling logic:
-    if (in_trap && !gs->trap_visited) {
-        gs->lives--;
-        gs->trap_visited = 1;
+    if (in_trap && !gs->player.traps_visited) {
+        gs->player.lives--;
+        gs->player.traps_visited = 1;
+        mz->current[cell_y][cell_x] = CELL_EMPTY;
     } else if (!in_trap) {
-        gs->trap_visited = 0;
+        gs->player.traps_visited = 0;
     }
     
     // Update sprite based on facing direction
    int sprite_x = 0;
    int sprite_y = 0;
 
-    switch (gs->player.facing_direction) {
-    case 0: sprite_x = 0; sprite_y = 0; break;   // up
-    case 1: sprite_x = 0; sprite_y = 24; break;  // left
-    case 2: sprite_x = 0; sprite_y = 48; break;  // down
-    case 3: sprite_x = 0; sprite_y = 24; break;  // right
+    switch (gs->player.facing) {
+        case 0: sprite_x = 0; sprite_y = 0; //up
+        break;   
+        case 1: sprite_x = 0; sprite_y = 24; //left
+        break;  
+        case 2: sprite_x = 0; sprite_y = 48; //down
+        break;  
+        case 3: sprite_x = 0; sprite_y = 24; //right
+        break;  
     }
 
     if (gs->player.sprite) {

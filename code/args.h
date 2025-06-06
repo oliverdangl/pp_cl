@@ -23,3 +23,4 @@ extern  struct argp argp;
 int parse_args(int argc, char **argv, GameOptions *opts);
 
 #endif
+
