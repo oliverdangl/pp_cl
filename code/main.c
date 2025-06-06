@@ -48,7 +48,6 @@ int main(int argc, char **argv) {
 
     //sprite section
     gs.player.sprite_sheet = cairo_image_surface_create_from_png("../assets/slime.png");
-    gs.player.facing_direction = 2; //startdirection: 2 = bottom(S)
     gs.player.sprite = cairo_surface_create_for_rectangle(gs.player.sprite_sheet, 0, 48, 24, 24); //startsprite values
 
     //loading maze
