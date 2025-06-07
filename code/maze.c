@@ -1,4 +1,6 @@
 #include "maze.h"
+#include "game.h"
+#include "player.h"
 #include "config.h"
 #include <stdlib.h>
 #include <stdio.h>
@@ -123,6 +125,24 @@ int is_wall_collision(Maze *mz, float x, float y) {
     }
 
     return 0;
+}
+
+
+void handle_trap(GameState *gs){
+    Maze *mz = gs->maze;
+    // Check if player is standing on a trap
+    int cell_x = (int)(gs->player->x - MAZE_OFFSET_X) / CELL_SIZE;
+    int cell_y = (int)(gs->player->y - MAZE_OFFSET_Y) / CELL_SIZE;
+    bool in_trap = mz->current[cell_y][cell_x] == CELL_TRAP;
+
+    // Trap handling logic:
+    if (in_trap && !gs->player->traps_visited) {
+        gs->player->lives--;
+        gs->player->traps_visited = 1;
+        mz->current[cell_y][cell_x] = CELL_EMPTY;
+    } else if (!in_trap) {
+        gs->player->traps_visited = 0;
+    }
 }
 
 

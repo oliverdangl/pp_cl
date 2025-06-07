@@ -2,8 +2,9 @@
 #define PLAYER_H
 
 #include <cairo.h>
-#include "maze.h"
 
+typedef struct Maze Maze;
+typedef struct GameState GameState;
 
 
 //Enum for directions a player can face
@@ -26,5 +27,6 @@ typedef struct PlayerState{
 
 
 void spawn_player(PlayerState *player, const Maze *maze);
-
+void apply_movement(GameState *gs, float dx, float dy);
+void update_player_sprites(GameState *gs);
 #endif 

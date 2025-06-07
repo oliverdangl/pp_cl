@@ -3,8 +3,9 @@
 
 #include <gtk/gtk.h>
 #include <cairo.h>
-#include "maze.h"
-#include "player.h"
+
+typedef struct Maze Maze;
+typedef struct PlayerState PlayerState;
 
 
 void draw_maze(cairo_t *cr, const Maze *maze, double cell_width, double cell_height);

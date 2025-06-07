@@ -50,7 +50,7 @@ int main(int argc, char **argv) {
     gs.num_pressed_keys = 256; //Keys on keyboard
     gs.pressed_keys = calloc(gs.num_pressed_keys, sizeof(int)); //Memory allocation for which key is pressed
     
-    // allocate maze and player structures
+    //allocate maze and player structures
     gs.maze   = malloc(sizeof *gs.maze);
     gs.player = malloc(sizeof *gs.player);
     

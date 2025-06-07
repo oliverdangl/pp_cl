@@ -1,8 +1,9 @@
 #include "draw.h"
+#include "maze.h"
+#include "player.h"
 #include "game.h"
 #include "config.h"
 #include <math.h>
-
 
 
 void draw_maze(cairo_t *cr, const Maze *maze, double cell_width, double cell_height) {
@@ -162,6 +163,5 @@ gboolean draw_callback(GtkWidget *drawing_area, cairo_t *cr, gpointer user_data)
     if (pl->lives <= 0) {
         draw_game_over(cr, width, height);
     }
-
     return FALSE;
 }

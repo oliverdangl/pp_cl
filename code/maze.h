@@ -2,7 +2,7 @@
 #define MAZE_H
 
 #include <stdbool.h>
-
+typedef struct GameState GameState;
 
 //enum for celltype
 typedef enum{
@@ -33,5 +33,7 @@ void reset_maze(Maze *maze);
 void free_maze(Maze *maze);
 
 int is_wall_collision(Maze *mz, float x, float y);
+
+void handle_trap(GameState *gs);
 
 #endif

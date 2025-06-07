@@ -6,10 +6,6 @@
 #include "player.h"
 
 
-
-
-
-
 /*
  * Handles key press events for the game
  * 
@@ -78,68 +74,6 @@ static void process_input(GameState *gs, float dt, float *dx, float *dy){
 
 }
 
-
-static void apply_movement(GameState *gs, float dx, float dy){
-    Maze *mz = gs->maze;
-    // Calculate new position and check for wall collisions
-    float new_x = gs->player->x + dx;
-    float new_y = gs->player->y + dy;
-    
-    // Only update position if no wall collision
-    if (!is_wall_collision(mz, new_x, new_y)) {
-        gs->player->x = new_x;
-        gs->player->y = new_y;
-    }
-}
-
-
-static void handle_trap(GameState *gs){
-    Maze *mz = gs->maze;
-    // Check if player is standing on a trap
-    int cell_x = (int)(gs->player->x - MAZE_OFFSET_X) / CELL_SIZE;
-    int cell_y = (int)(gs->player->y - MAZE_OFFSET_Y) / CELL_SIZE;
-    bool in_trap = mz->current[cell_y][cell_x] == CELL_TRAP;
-
-    // Trap handling logic:
-    if (in_trap && !gs->player->traps_visited) {
-        gs->player->lives--;
-        gs->player->traps_visited = 1;
-        mz->current[cell_y][cell_x] = CELL_EMPTY;
-    } else if (!in_trap) {
-        gs->player->traps_visited = 0;
-    }
-}
-
-static void update_player_sprites(GameState *gs){
-   //Update sprite based on facing direction
-   int sprite_x = 0;
-   int sprite_y = 0;
-
-    switch (gs->player->facing) {
-        case DIR_UP: 
-            sprite_x = 0; 
-            sprite_y = 0; //up
-            break;   
-        case DIR_LEFT: 
-            sprite_x = 0; 
-            sprite_y = 24; //left
-            break;  
-        case DIR_DOWN: 
-            sprite_x = 0; 
-            sprite_y = 48; //down
-            break;  
-        case DIR_RIGHT: 
-            sprite_x = 0; 
-            sprite_y = 24; //right
-            break;  
-    }
-
-    if (gs->player->sprite) {
-    cairo_surface_destroy(gs->player->sprite);
-    }
-    gs->player->sprite = cairo_surface_create_for_rectangle(gs->player->sprite_sheet, sprite_x, sprite_y, 24, 24);
-
-}
 
 
 /*
