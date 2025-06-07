@@ -133,8 +133,6 @@ void draw_lives(cairo_t *cr, int lives, double width, double height) {
 
 gboolean draw_callback(GtkWidget *drawing_area, cairo_t *cr, gpointer user_data) {
     GameState *gs = (GameState *)user_data;
-    Maze *mz = gs->maze;
-    PlayerState *pl = gs->player;
 
     // Fenstergröße ermitteln
     GtkAllocation alloc;
@@ -147,20 +145,20 @@ gboolean draw_callback(GtkWidget *drawing_area, cairo_t *cr, gpointer user_data)
     cairo_paint(cr);
 
     // Zellgröße berechnen
-    double cell_width = (double)width / mz->width;
-    double cell_height = (double)height / mz->height;
+    double cell_width = (double)width / gs->maze->width;
+    double cell_height = (double)height / gs->maze->height;
 
     // Labyrinth zeichnen
-    draw_maze(cr, mz, cell_width, cell_height);
+    draw_maze(cr, gs->maze, cell_width, cell_height);
 
     // Spieler zeichnen
-    draw_player(cr, pl, cell_width, cell_height);
+    draw_player(cr, gs->player, cell_width, cell_height);
 
     // Leben anzeigen
-    draw_lives(cr, pl->lives, width, height);
+    draw_lives(cr, gs->player->lives, width, height);
 
     // Game Over anzeigen falls nötig
-    if (pl->lives <= 0) {
+    if (gs->player->lives <= 0) {
         draw_game_over(cr, width, height);
     }
     return FALSE;

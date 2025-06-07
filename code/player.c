@@ -32,13 +32,12 @@ void spawn_player(PlayerState *player, const Maze *maze){
 
 
 void apply_movement(GameState *gs, float dx, float dy){
-    Maze *mz = gs->maze;
     // Calculate new position and check for wall collisions
     float new_x = gs->player->x + dx;
     float new_y = gs->player->y + dy;
     
     // Only update position if no wall collision
-    if (!is_wall_collision(mz, new_x, new_y)) {
+    if (!is_wall_collision(gs->maze, new_x, new_y)) {
         gs->player->x = new_x;
         gs->player->y = new_y;
     }

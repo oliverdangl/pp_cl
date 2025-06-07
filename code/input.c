@@ -86,7 +86,6 @@ This function detects:
 gboolean update_callback(GtkWidget *widget, GdkFrameClock *clock, gpointer user_data) {
     GameState *gs = (GameState *)user_data; // Getting current game state
     static gint64 prev_time = 0;
-    Maze *mz = gs->maze;
 
     // If game over, freeze game 
     if (gs->player->lives <= 0) {

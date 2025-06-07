@@ -94,7 +94,7 @@ void free_maze(Maze *maze) {
 /**
  * Checks for collision between player's hitbox and walls in the maze
  */
-int is_wall_collision(Maze *mz, float x, float y) {
+int is_wall_collision(Maze *maze, float x, float y) {
     const float hitbox_half = 8.0f; // 16x16 Hitbox, also Radius = 8
 
     //center of the player
@@ -111,16 +111,16 @@ int is_wall_collision(Maze *mz, float x, float y) {
     
 
     //checking for maze borders
-    if (left_cell < 0 || right_cell >= mz->width ||
-        top_cell < 0 || bottom_cell >= mz->height) {
+    if (left_cell < 0 || right_cell >= maze->width ||
+        top_cell < 0 || bottom_cell >= maze->height) {
         return 1;
     }
 
     //collision check with wall
-    if (mz->current[top_cell][left_cell] == CELL_WALL ||
-        mz->current[top_cell][right_cell] == CELL_WALL ||
-        mz->current[bottom_cell][left_cell] == CELL_WALL ||
-        mz->current[bottom_cell][right_cell] == CELL_WALL) {
+    if (maze->current[top_cell][left_cell] == CELL_WALL ||
+        maze->current[top_cell][right_cell] == CELL_WALL ||
+        maze->current[bottom_cell][left_cell] == CELL_WALL ||
+        maze->current[bottom_cell][right_cell] == CELL_WALL) {
         return 1;
     }
 
@@ -129,17 +129,16 @@ int is_wall_collision(Maze *mz, float x, float y) {
 
 
 void handle_trap(GameState *gs){
-    Maze *mz = gs->maze;
     // Check if player is standing on a trap
     int cell_x = (int)(gs->player->x - MAZE_OFFSET_X) / CELL_SIZE;
     int cell_y = (int)(gs->player->y - MAZE_OFFSET_Y) / CELL_SIZE;
-    bool in_trap = mz->current[cell_y][cell_x] == CELL_TRAP;
+    bool in_trap = gs->maze->current[cell_y][cell_x] == CELL_TRAP;
 
     // Trap handling logic:
     if (in_trap && !gs->player->traps_visited) {
         gs->player->lives--;
         gs->player->traps_visited = 1;
-        mz->current[cell_y][cell_x] = CELL_EMPTY;
+        gs->maze->current[cell_y][cell_x] = CELL_EMPTY;
     } else if (!in_trap) {
         gs->player->traps_visited = 0;
     }
