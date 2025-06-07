@@ -132,8 +132,8 @@ void draw_lives(cairo_t *cr, int lives, double width, double height) {
 
 gboolean draw_callback(GtkWidget *drawing_area, cairo_t *cr, gpointer user_data) {
     GameState *gs = (GameState *)user_data;
-    Maze *mz = &gs->maze;
-    PlayerState *pl = &gs->player;
+    Maze *mz = gs->maze;
+    PlayerState *pl = gs->player;
 
     // Fenstergröße ermitteln
     GtkAllocation alloc;

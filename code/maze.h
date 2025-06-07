@@ -13,7 +13,7 @@ typedef enum{
 
 
 //struct holding data of current and original maze
-typedef struct {
+typedef struct Maze{
     int **current; //current maze
     int **original; //maze when loaded 
     int width; //columns

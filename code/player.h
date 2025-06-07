@@ -15,7 +15,7 @@ typedef enum{
 }FacingDirection;
 
 
-typedef struct {
+typedef struct PlayerState{
     float x, y;
     FacingDirection facing;
     int lives;

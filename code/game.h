@@ -1,12 +1,12 @@
 #ifndef GAME_H
 #define GAME_H
 
-#include "maze.h"
-#include "player.h"
+typedef struct Maze Maze;
+typedef struct PlayerState PlayerState;
 
-typedef struct{
-    Maze maze;
-    PlayerState player;
+typedef struct GameState{
+    Maze *maze;
+    PlayerState *player;
     int *pressed_keys;
     unsigned int num_pressed_keys;
 }GameState;

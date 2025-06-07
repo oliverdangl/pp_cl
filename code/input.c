@@ -21,10 +21,10 @@ gboolean on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
     GameState *gs = (GameState *)user_data; // Refreshing current game state
     
     // No lives left and Return pressed => reset game
-    if (gs->player.lives <= 0 && event->keyval == GDK_KEY_Return) {
+    if (gs->player->lives <= 0 && event->keyval == GDK_KEY_Return) {
         //reseting game and player respawn
-        reset_maze(&gs->maze);
-        spawn_player(&gs->player, &gs->maze);
+        reset_maze(gs->maze);
+        spawn_player(gs->player, gs->maze);
         
         memset(gs->pressed_keys, 0, gs->num_pressed_keys * sizeof(int));
         return TRUE;
@@ -44,7 +44,7 @@ gboolean on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
 gboolean on_key_release(GtkWidget *widget, GdkEventKey *event, gpointer user_data) {
     GameState *gs = (GameState *)user_data; // Refreshing current game state
     
-    if (gs->player.lives <= 0)
+    if (gs->player->lives <= 0)
         return TRUE;
         
     gs->pressed_keys[event->keyval] = 0;
@@ -61,52 +61,52 @@ static void process_input(GameState *gs, float dt, float *dx, float *dy){
     // Keys for movement in upper and lower case
     if (gs->pressed_keys['w'] || gs->pressed_keys['W']) {
         *dy -= speed;
-        gs->player.facing = DIR_UP; // up
+        gs->player->facing = DIR_UP; // up
     }
     if (gs->pressed_keys['s'] || gs->pressed_keys['S']) {
         *dy += speed;
-        gs->player.facing = DIR_DOWN; // down
+        gs->player->facing = DIR_DOWN; // down
     }
     if (gs->pressed_keys['a'] || gs->pressed_keys['A']) {
         *dx -= speed;
-        gs->player.facing = DIR_LEFT; // left
+        gs->player->facing = DIR_LEFT; // left
     }
     if (gs->pressed_keys['d'] || gs->pressed_keys['D']) {
         *dx += speed;
-        gs->player.facing = DIR_RIGHT; // right
+        gs->player->facing = DIR_RIGHT; // right
     }
 
 }
 
 
 static void apply_movement(GameState *gs, float dx, float dy){
-    Maze *mz = &gs->maze;
+    Maze *mz = gs->maze;
     // Calculate new position and check for wall collisions
-    float new_x = gs->player.x + dx;
-    float new_y = gs->player.y + dy;
+    float new_x = gs->player->x + dx;
+    float new_y = gs->player->y + dy;
     
     // Only update position if no wall collision
     if (!is_wall_collision(mz, new_x, new_y)) {
-        gs->player.x = new_x;
-        gs->player.y = new_y;
+        gs->player->x = new_x;
+        gs->player->y = new_y;
     }
 }
 
 
 static void handle_trap(GameState *gs){
-    Maze *mz = &gs->maze;
+    Maze *mz = gs->maze;
     // Check if player is standing on a trap
-    int cell_x = (int)(gs->player.x - MAZE_OFFSET_X) / CELL_SIZE;
-    int cell_y = (int)(gs->player.y - MAZE_OFFSET_Y) / CELL_SIZE;
+    int cell_x = (int)(gs->player->x - MAZE_OFFSET_X) / CELL_SIZE;
+    int cell_y = (int)(gs->player->y - MAZE_OFFSET_Y) / CELL_SIZE;
     bool in_trap = mz->current[cell_y][cell_x] == CELL_TRAP;
 
     // Trap handling logic:
-    if (in_trap && !gs->player.traps_visited) {
-        gs->player.lives--;
-        gs->player.traps_visited = 1;
+    if (in_trap && !gs->player->traps_visited) {
+        gs->player->lives--;
+        gs->player->traps_visited = 1;
         mz->current[cell_y][cell_x] = CELL_EMPTY;
     } else if (!in_trap) {
-        gs->player.traps_visited = 0;
+        gs->player->traps_visited = 0;
     }
 }
 
@@ -115,7 +115,7 @@ static void update_player_sprites(GameState *gs){
    int sprite_x = 0;
    int sprite_y = 0;
 
-    switch (gs->player.facing) {
+    switch (gs->player->facing) {
         case DIR_UP: 
             sprite_x = 0; 
             sprite_y = 0; //up
@@ -134,10 +134,10 @@ static void update_player_sprites(GameState *gs){
             break;  
     }
 
-    if (gs->player.sprite) {
-    cairo_surface_destroy(gs->player.sprite);
+    if (gs->player->sprite) {
+    cairo_surface_destroy(gs->player->sprite);
     }
-    gs->player.sprite = cairo_surface_create_for_rectangle(gs->player.sprite_sheet, sprite_x, sprite_y, 24, 24);
+    gs->player->sprite = cairo_surface_create_for_rectangle(gs->player->sprite_sheet, sprite_x, sprite_y, 24, 24);
 
 }
 
@@ -152,10 +152,10 @@ This function detects:
 gboolean update_callback(GtkWidget *widget, GdkFrameClock *clock, gpointer user_data) {
     GameState *gs = (GameState *)user_data; // Getting current game state
     static gint64 prev_time = 0;
-    Maze *mz = &gs->maze;
+    Maze *mz = gs->maze;
 
     // If game over, freeze game 
-    if (gs->player.lives <= 0) {
+    if (gs->player->lives <= 0) {
         gtk_widget_queue_draw(widget);
         return G_SOURCE_CONTINUE;
     }

@@ -49,16 +49,21 @@ int main(int argc, char **argv) {
 
     gs.num_pressed_keys = 256; //Keys on keyboard
     gs.pressed_keys = calloc(gs.num_pressed_keys, sizeof(int)); //Memory allocation for which key is pressed
-    gs.maze.current = NULL;
-    gs.maze.original = NULL;
+    
+    // allocate maze and player structures
+    gs.maze   = malloc(sizeof *gs.maze);
+    gs.player = malloc(sizeof *gs.player);
+    
+    gs.maze->current = NULL;
+    gs.maze->original = NULL;
 
     //sprite section
-    gs.player.sprite_sheet = cairo_image_surface_create_from_png("../assets/slime.png");
-    gs.player.sprite = cairo_surface_create_for_rectangle(gs.player.sprite_sheet, 0, 48, 24, 24); //startsprite values
+    gs.player->sprite_sheet = cairo_image_surface_create_from_png("../assets/slime.png");
+    gs.player->sprite = cairo_surface_create_for_rectangle(gs.player->sprite_sheet, 0, 48, 24, 24); //startsprite values
 
     //loading maze
-    load_maze_from_file(&gs.maze, opts.maze_file);
-    spawn_player(&gs.player, &gs.maze);
+    load_maze_from_file(gs.maze, opts.maze_file);
+    spawn_player(gs.player, gs.maze);
    
     app = gtk_application_new("org.maze.app", G_APPLICATION_FLAGS_NONE);
     g_signal_connect(app, "activate", G_CALLBACK(activate), &gs); // Connects activate signal with callback function
@@ -66,10 +71,11 @@ int main(int argc, char **argv) {
 
     //seting allocated memory free
     free(gs.pressed_keys);
-    free_maze(&gs.maze);
-    cairo_surface_destroy(gs.player.sprite);
-    cairo_surface_destroy(gs.player.sprite_sheet);
-    
+    free_maze(gs.maze);
+    free(gs.maze);
+    cairo_surface_destroy(gs.player->sprite);
+    cairo_surface_destroy(gs.player->sprite_sheet);
+    free(gs.player);
 
     g_object_unref(app);
     return status;
