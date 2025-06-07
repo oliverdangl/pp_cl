@@ -32,4 +32,6 @@ void reset_maze(Maze *maze);
 //frees all dynamically alocated memory
 void free_maze(Maze *maze);
 
+int is_wall_collision(Maze *mz, float x, float y);
+
 #endif

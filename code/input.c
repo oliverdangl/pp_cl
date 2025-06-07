@@ -6,42 +6,7 @@
 #include "player.h"
 
 
-/**
- * Checks for collision between player's hitbox and walls in the maze
- */
-static int is_wall_collision(GameState *gs, float x, float y) {
-    const float hitbox_half = 8.0f; // 16x16 Hitbox, also Radius = 8
 
-    //center of the player
-    float left = x - hitbox_half;
-    float right = x + hitbox_half;
-    float top = y - hitbox_half;
-    float bottom = y + hitbox_half;
-
-    //calculating maze cells
-    int left_cell = (int)((left - MAZE_OFFSET_X) / CELL_SIZE);
-    int right_cell = (int)((right - MAZE_OFFSET_X) / CELL_SIZE);
-    int top_cell = (int)((top - MAZE_OFFSET_Y) / CELL_SIZE);
-    int bottom_cell = (int)((bottom - MAZE_OFFSET_Y) / CELL_SIZE);
-    
-    Maze *mz = &gs->maze;
-
-    //checking for maze borders
-    if (left_cell < 0 || right_cell >= mz->width ||
-        top_cell < 0 || bottom_cell >= mz->height) {
-        return 1;
-    }
-
-    //collision check with wall
-    if (mz->current[top_cell][left_cell] == CELL_WALL ||
-        mz->current[top_cell][right_cell] == CELL_WALL ||
-        mz->current[bottom_cell][left_cell] == CELL_WALL ||
-        mz->current[bottom_cell][right_cell] == CELL_WALL) {
-        return 1;
-    }
-
-    return 0;
-}
 
 
 
@@ -97,6 +62,7 @@ This function detects:
 gboolean update_callback(GtkWidget *widget, GdkFrameClock *clock, gpointer user_data) {
     GameState *gs = (GameState *)user_data; // Getting current game state
     static gint64 prev_time = 0;
+    Maze *mz = &gs->maze;
 
     // If game over, freeze game 
     if (gs->player.lives <= 0) {
@@ -143,7 +109,7 @@ gboolean update_callback(GtkWidget *widget, GdkFrameClock *clock, gpointer user_
     float new_y = gs->player.y + dy;
     
     // Only update position if no wall collision
-    if (!is_wall_collision(gs, new_x, new_y)) {
+    if (!is_wall_collision(mz, new_x, new_y)) {
         gs->player.x = new_x;
         gs->player.y = new_y;
     }
@@ -151,7 +117,6 @@ gboolean update_callback(GtkWidget *widget, GdkFrameClock *clock, gpointer user_
     // Check if player is standing on a trap
     int cell_x = (int)(gs->player.x - MAZE_OFFSET_X) / CELL_SIZE;
     int cell_y = (int)(gs->player.y - MAZE_OFFSET_Y) / CELL_SIZE;
-    Maze *mz = &gs->maze;
     bool in_trap = mz->current[cell_y][cell_x] == CELL_TRAP;
 
     // Trap handling logic:
