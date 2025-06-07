@@ -1,10 +1,9 @@
 #include <stdlib.h>
-#include <argp.h>
 #include "cmdline.h"
 #include "config.h"
 
-char args_doc[] = " [--width WIDTH] [--height HEIGHT] [--maze FILE]";
-char doc[]      = "Maze Game -- Beispiel zur Argumenterkennung mit argp";
+char args_doc[] = " [--w width WIDTH] [--h height HEIGHT] [--m maze FILE]";
+char doc[]      = "";
 
 
 
