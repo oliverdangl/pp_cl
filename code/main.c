@@ -7,7 +7,7 @@
 #include "player.h"
 #include "draw.h"
 #include "input.h"
-#include "args.h"
+#include "cmdline.h"
 #include "game.h"
 
 static GameOptions opts;

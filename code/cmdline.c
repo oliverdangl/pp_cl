@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <argp.h>
-#include "args.h"
+#include "cmdline.h"
 #include "config.h"
 
 char args_doc[] = " [--width WIDTH] [--height HEIGHT] [--maze FILE]";
