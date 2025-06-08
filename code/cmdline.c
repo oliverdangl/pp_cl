@@ -2,7 +2,7 @@
 #include "cmdline.h"
 #include "config.h"
 
-char args_doc[] = " [--w width WIDTH] [--h height HEIGHT] [--m maze FILE]";
+char args_doc[] = " [-w width WIDTH] [-h height HEIGHT] [-m maze FILE]";
 char doc[]      = "";
 
 
