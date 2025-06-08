@@ -21,7 +21,7 @@ typedef struct PlayerState{
     float x, y;
     FacingDirection facing;
     int lives;
-    int traps_visited;
+    bool traps_visited;
     bool plate_visited;
     cairo_surface_t *sprite_sheet;
     cairo_surface_t *sprite;

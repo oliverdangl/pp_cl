@@ -4,45 +4,50 @@
 #include <stdbool.h>
 typedef struct GameState GameState;
 
-//enum for celltype
+//Enum for celltype
 typedef enum{
-    CELL_EMPTY = 0, //field to walk on
-    CELL_WALL = 1, //wall
-    CELL_TRAP = 2, //trap
-    CELL_PLATE = 3, //plate
-    CELL_DOOR = 4 //door block to open
+    CELL_EMPTY = 0, 
+    CELL_WALL = 1, 
+    CELL_TRAP = 2, 
+    CELL_PLATE = 3, 
+    CELL_DOOR = 4 
 }CellType;
 
 
-//struct holding data of current and original maze
+/*
+ * Holds original layout for resets as well as mutable current state.
+ * Also includes special elements like plates and door coordinates.
+ */
 typedef struct Maze{
-    int **current; //current maze
-    int **original; //maze when loaded 
-    int width; //columns
-    int height; //rows
-    int plate_count;
-    int *plate_x;
+    int **current; //Current maze
+    int **original; //Copy of loaded maze
+    int width; 
+    int height; 
+    int plate_count; //Amount of plates
+    int *plate_x; 
     int *plate_y;
-    bool *plate_pressed;
-    int current_plate; //current visible plate
-    int door_x, door_y; //door coordinate
+    bool *plate_pressed; 
+    int current_plate; //Current visible plate
+    int door_x, door_y;
 } Maze;
 
 
-/*loads maze from text file
-- first 2 values: widht, height
-*/
+//Loads map from text file
 bool load_maze_from_file(Maze *maze, const char *filename);
 
-//resets the maze to the original state
+//Resets the maze to the original state
 void reset_maze(Maze *maze);
 
-//frees all dynamically alocated memory
+//Free all dynamically alocated memory
 void free_maze(Maze *maze);
 
+//Checks for collision with walls or door
 int is_wall_collision(Maze *maze, float x, float y);
 
+//Handle trap activation and live decrement
 void handle_trap(GameState *gs);
 
+//Handle preassure plate steppinng and door opening
 void handle_plates(GameState *gs);
+
 #endif
