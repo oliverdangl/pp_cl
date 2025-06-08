@@ -116,6 +116,8 @@ gboolean update_callback(GtkWidget *widget, GdkFrameClock *clock, gpointer user_
 
     handle_trap(gs);
     
+    handle_plates(gs);
+    
     update_player_sprites(gs);
     
     // Request widget redraw

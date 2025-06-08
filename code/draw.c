@@ -27,7 +27,20 @@ void draw_maze(cairo_t *cr, const Maze *maze, double cell_width, double cell_hei
                 cairo_arc(cr, draw_x + cell_width/2, draw_y + cell_height/2, 
                          fmin(cell_width, cell_height)/3, 0, 2 * M_PI);
                 cairo_fill(cr);
-            }
+            } else if(maze->current[y][x] == CELL_PLATE){
+                cairo_set_source_rgb(cr, 0, 0, 1);
+                cairo_arc(cr, draw_x + cell_width/2, draw_y + cell_height/2, 
+                         fmin(cell_width, cell_height)/3, 0, 2 * M_PI);
+                cairo_fill(cr);
+            } else if(maze->current[y][x] == CELL_DOOR){
+                cairo_set_source_rgb(cr, 0, 0, 1);
+                cairo_rectangle(cr, draw_x, draw_y, cell_width, cell_height);
+                cairo_fill(cr);
+                cairo_set_source_rgb(cr, 0, 0, 0);
+                cairo_set_line_width(cr, 1);
+                cairo_rectangle(cr, draw_x, draw_y, cell_width, cell_height);
+                cairo_stroke(cr);
+                }
         }
     }
 }

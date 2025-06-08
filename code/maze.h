@@ -8,7 +8,9 @@ typedef struct GameState GameState;
 typedef enum{
     CELL_EMPTY = 0, //field to walk on
     CELL_WALL = 1, //wall
-    CELL_TRAP = 2 //trap
+    CELL_TRAP = 2, //trap
+    CELL_PLATE = 3, //plate
+    CELL_DOOR = 4 //door block to open
 }CellType;
 
 
@@ -18,6 +20,12 @@ typedef struct Maze{
     int **original; //maze when loaded 
     int width; //columns
     int height; //rows
+    int plate_count;
+    int *plate_x;
+    int *plate_y;
+    bool *plate_pressed;
+    int current_plate; //current visible plate
+    int door_x, door_y; //door coordinate
 } Maze;
 
 
@@ -36,4 +44,5 @@ int is_wall_collision(Maze *maze, float x, float y);
 
 void handle_trap(GameState *gs);
 
+void handle_plates(GameState *gs);
 #endif

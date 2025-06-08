@@ -2,6 +2,7 @@
 #define PLAYER_H
 
 #include <cairo.h>
+#include <stdbool.h>
 
 typedef struct Maze Maze;
 typedef struct GameState GameState;
@@ -21,6 +22,7 @@ typedef struct PlayerState{
     FacingDirection facing;
     int lives;
     int traps_visited;
+    bool plate_visited;
     cairo_surface_t *sprite_sheet;
     cairo_surface_t *sprite;
 }PlayerState;
