@@ -4,14 +4,12 @@
 #include <gtk/gtk.h>
 
 
-//callbacks for key events
+//Callbacks for key events
 gboolean on_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data);
 gboolean on_key_release(GtkWidget *widget, GdkEventKey *event, gpointer user_data);
 
-//callback for game update
+//Callback for game update
 gboolean update_callback(GtkWidget *widget, GdkFrameClock *clock, gpointer user_data);
-
-
 
 #endif
 
