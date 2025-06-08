@@ -7,6 +7,9 @@
 #include <stdbool.h>
 
 
+/*
+ * Revealing traps within the calculated radius of the player
+ */
 void reveal_traps_near_player(GameState *gs, float reveal_distance){
     float current_x = gs->player->x;
     float current_y = gs->player->y;
