@@ -5,6 +5,7 @@
 #include "config.h"
 #include <math.h>
 
+static bool fullscreen_activated = false;
 
 static bool is_revealed_trap(const Maze *mz, int y, int x){
     for(int i = 0; i < mz->trap_count; i++){
@@ -34,18 +35,18 @@ void draw_maze(cairo_t *cr, const Maze *maze, double cell_width, double cell_hei
                 cairo_set_line_width(cr, 1);
                 cairo_rectangle(cr, draw_x, draw_y, cell_width, cell_height);
                 cairo_stroke(cr);
-            }           
+            }
             else if (maze->current[y][x] == CELL_TRAP || is_revealed_trap(maze, y, x)) {
                 // Falle zeichnen
                 cairo_set_source_rgb(cr, 1, 0, 0);
-                cairo_arc(cr, draw_x + cell_width/2, draw_y + cell_height/2, 
+                cairo_arc(cr, draw_x + cell_width/2, draw_y + cell_height/2,
                          fmin(cell_width, cell_height)/3, 0, 2 * M_PI);
                 cairo_fill(cr);
-                
-            }                
+
+            }
             else if(maze->current[y][x] == CELL_PLATE){
                 cairo_set_source_rgb(cr, 0, 0, 1);
-                cairo_arc(cr, draw_x + cell_width/2, draw_y + cell_height/2, 
+                cairo_arc(cr, draw_x + cell_width/2, draw_y + cell_height/2,
                          fmin(cell_width, cell_height)/3, 0, 2 * M_PI);
                 cairo_fill(cr);
             } else if(maze->current[y][x] == CELL_DOOR){
@@ -118,9 +119,24 @@ void draw_player(cairo_t *cr, const PlayerState *player, double cell_width, doub
 
 
 void draw_game_over(cairo_t *cr, int width, int height) {
+
+static cairo_surface_t *scare_img = NULL;
+scare_img = cairo_image_surface_create_from_png("../assets/scare.png");
+// 2) Bild skalieren, damit es das gesamte Fenster füllt
+    int img_w = cairo_image_surface_get_width(scare_img);
+    int img_h = cairo_image_surface_get_height(scare_img);
+    double scale_x = (double)width  / img_w;
+    double scale_y = (double)height / img_h;
+
+    cairo_save(cr);
+    cairo_scale(cr, scale_x, scale_y);
+    cairo_set_source_surface(cr, scare_img, 0, 0);
+    cairo_paint(cr);
+    cairo_restore(cr);
+
     cairo_set_source_rgb(cr, 1, 0, 0);
     cairo_select_font_face(cr, "Arial", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_BOLD);
-    
+
     // "GAME OVER" Text
     cairo_set_font_size(cr, 40);
     const char *text = "GAME OVER";
@@ -151,10 +167,10 @@ void draw_lives(cairo_t *cr, int lives, double width, double height) {
     cairo_show_text(cr, "Lives:");
 
     for (int i = 0; i < lives; i++) {
-        cairo_rectangle(cr, 
-            start_x + (life_width + padding) * (i + 3), 
-            start_y - life_height, 
-            life_width, 
+        cairo_rectangle(cr,
+            start_x + (life_width + padding) * (i + 3),
+            start_y - life_height,
+            life_width,
             life_height);
         cairo_fill(cr);
     }
@@ -162,6 +178,23 @@ void draw_lives(cairo_t *cr, int lives, double width, double height) {
 
 gboolean draw_callback(GtkWidget *drawing_area, cairo_t *cr, gpointer user_data) {
     GameState *gs = (GameState *)user_data;
+    GtkWidget *toplevel = gtk_widget_get_toplevel(drawing_area);
+
+    // Fullscreen beim Game Over
+    if (gs->player->lives <= 0 && !fullscreen_activated) {
+        if (GTK_IS_WINDOW(toplevel)) {
+            gtk_window_fullscreen(GTK_WINDOW(toplevel));
+            fullscreen_activated = true;
+        }
+    }
+
+    // Zurück im Fenster­modus bei Restart
+    if (gs->player->lives > 0 && fullscreen_activated) {
+        if (GTK_IS_WINDOW(toplevel)) {
+            gtk_window_unfullscreen(GTK_WINDOW(toplevel));
+            fullscreen_activated = false;
+        }
+    }
 
     // Fenstergröße ermitteln
     GtkAllocation alloc;
