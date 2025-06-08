@@ -6,6 +6,19 @@
 #include <math.h>
 
 
+static bool is_revealed_trap(const Maze *mz, int y, int x){
+    for(int i = 0; i < mz->trap_count; i++){
+        if(mz->traps[i].trap_x == x &&
+           mz->traps[i].trap_y == y &&
+           mz->traps[i].revealed){
+            return true;
+           }
+    }
+    return false;
+}
+
+
+
 void draw_maze(cairo_t *cr, const Maze *maze, double cell_width, double cell_height) {
     for (int y = 0; y < maze->height; y++) {
         for (int x = 0; x < maze->width; x++) {
@@ -21,13 +34,16 @@ void draw_maze(cairo_t *cr, const Maze *maze, double cell_width, double cell_hei
                 cairo_set_line_width(cr, 1);
                 cairo_rectangle(cr, draw_x, draw_y, cell_width, cell_height);
                 cairo_stroke(cr);
-            } else if (maze->current[y][x] == CELL_TRAP) {
+            }           
+            else if (maze->current[y][x] == CELL_TRAP || is_revealed_trap(maze, y, x)) {
                 // Falle zeichnen
                 cairo_set_source_rgb(cr, 1, 0, 0);
                 cairo_arc(cr, draw_x + cell_width/2, draw_y + cell_height/2, 
                          fmin(cell_width, cell_height)/3, 0, 2 * M_PI);
                 cairo_fill(cr);
-            } else if(maze->current[y][x] == CELL_PLATE){
+                
+            }                
+            else if(maze->current[y][x] == CELL_PLATE){
                 cairo_set_source_rgb(cr, 0, 0, 1);
                 cairo_arc(cr, draw_x + cell_width/2, draw_y + cell_height/2, 
                          fmin(cell_width, cell_height)/3, 0, 2 * M_PI);

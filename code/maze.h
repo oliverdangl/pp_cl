@@ -13,6 +13,23 @@ typedef enum{
     CELL_DOOR = 4 
 }CellType;
 
+//Struct for plates
+typedef struct Plate{
+    int plate_x; 
+    int plate_y;   
+    bool plate_pressed; 
+    int current_plate; //Current visible plate
+    bool visible;
+} Plate;
+
+//Struct for traps
+typedef struct Trap{
+    int trap_x;
+    int trap_y;    
+    bool triggered;
+    bool revealed;
+} Trap;
+
 
 /*
  * Holds original layout for resets as well as mutable current state.
@@ -23,11 +40,10 @@ typedef struct Maze{
     int **original; //Copy of loaded maze
     int width; 
     int height; 
-    int plate_count; //Amount of plates
-    int *plate_x; 
-    int *plate_y;
-    bool *plate_pressed; 
-    int current_plate; //Current visible plate
+    Plate *plates;
+    int plate_count;
+    Trap *traps;
+    int trap_count;
     int door_x, door_y;
 } Maze;
 
@@ -50,4 +66,6 @@ void handle_trap(GameState *gs);
 //Handle preassure plate steppinng and door opening
 void handle_plates(GameState *gs);
 
+//Reveal traps near the player
+void reveal_traps_near_player(GameState *gs, float reveal_distance);
 #endif

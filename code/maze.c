@@ -6,10 +6,36 @@
 #include <stdio.h>
 #include <stdbool.h>
 
+
+void reveal_traps_near_player(GameState *gs, float reveal_distance){
+    float current_x = gs->player->x;
+    float current_y = gs->player->y;
+    
+    for(int i = 0; i < gs->maze->trap_count; i++){
+        Trap *t = &gs->maze->traps[i];
+        if(!t->revealed){
+        
+        float trap_x = t->trap_x * CELL_SIZE + MAZE_OFFSET_X + CELL_SIZE/2;
+        float trap_y = t->trap_y * CELL_SIZE + MAZE_OFFSET_Y + CELL_SIZE/2;
+        
+        float dist_x = current_x - trap_x;
+        float dist_y = current_y - trap_y;
+        float dist2 = dist_x * dist_x + dist_y * dist_y;
+        if(dist2 <= reveal_distance * reveal_distance){
+            //reveal
+            t->revealed = true;
+            gs->maze->current[t->trap_y][t->trap_x] = CELL_TRAP;
+        }
+        }
+    }
+}
+
+
+
 /*
- * Scan the original maze for preasure plates and the exit door
+ * Scan the original maze for preasure plates
  */
-static int scan_plates_and_door(Maze *mz){
+static int scan_plates(const Maze *mz){
     int count = 0;
     for(int y = 0; y < mz->height; y++){
         for(int x = 0; x < mz->width; x++){
@@ -17,10 +43,21 @@ static int scan_plates_and_door(Maze *mz){
             if(current_field == CELL_PLATE){
                 count++;
             }
-            //Storing door coordinates
-            else if(current_field == CELL_DOOR){
-                mz->door_x = x;
-                mz->door_y = y;
+        }
+    }
+    return count;
+}
+
+/*
+ * Scan the original maze for traps
+ */
+static int scan_traps(const Maze *mz){
+    int count = 0;
+    for(int y = 0; y < mz->height; y++){
+        for(int x = 0; x < mz->width; x++){
+            int current_field = mz->original[y][x];
+            if(current_field == CELL_TRAP){
+                count++;
             }
         }
     }
@@ -28,34 +65,43 @@ static int scan_plates_and_door(Maze *mz){
 }
 
 
+
 /*
  *Hide all plates initially, allocate arrays to track them and then reveal the first plate
  */
-static void place_plates(Maze *mz){
-    //Allocate memory for coordinates and state of the plates
-    mz->plate_x = malloc(mz->plate_count * sizeof *mz->plate_x);
-    mz->plate_y = malloc(mz->plate_count * sizeof *mz->plate_y);
-    mz->plate_pressed = malloc(mz->plate_count * sizeof *mz->plate_pressed);
-   
+static void place_plates_and_traps(Maze *mz){
+
     //Scan in original maze for plates and hide current ones
-    int plate_index = 0;
+    int p_index = 0;
+    int t_index = 0;
     for(int y = 0; y < mz->height; y++){
         for(int x = 0; x < mz->width; x++){
             if(mz->original[y][x] == CELL_PLATE){
-                mz->plate_x[plate_index] = x;
-                mz->plate_y[plate_index] = y;
+                mz->plates[p_index].plate_x = x;
+                mz->plates[p_index].plate_y = y;
                 mz->current[y][x] = CELL_EMPTY; //Hide plate
-                mz->plate_pressed[plate_index] = false;
-                plate_index++;
+                mz->plates[p_index].plate_pressed = false;
+                p_index++;
+            }
+            else if(mz->original[y][x] == CELL_TRAP){
+                mz->traps[t_index].trap_x = x;
+                mz->traps[t_index].trap_y = y;
+                mz->traps[t_index].triggered = false;
+                mz->traps[t_index].revealed = false;
+                mz->current[y][x] = CELL_EMPTY;
+                t_index++;
             }
         }
     }
     //Revealing first plate again
-    mz->current_plate = 0;
-    int first_plate_x = mz->plate_x[0];
-    int first_plate_y = mz->plate_y[0];
-    mz->current[first_plate_y][first_plate_x] = CELL_PLATE;
+    mz->plates[0].visible = true;
+    int plate_x = mz->plates[0].plate_x;
+    int plate_y = mz->plates[0].plate_y;
+    mz->current[plate_y][plate_x] = CELL_PLATE;
 }
+
+
+
 
 
 /*
@@ -63,13 +109,13 @@ static void place_plates(Maze *mz){
  */
 static void allocate_maze(Maze *mz){
     //Allocate memory for the size of a row
-    mz->current = malloc(mz->height * sizeof(int *));
-    mz->original = malloc(mz->height * sizeof(int *));
+    mz->current = malloc(mz->height * sizeof *mz->current);
+    mz->original = malloc(mz->height * sizeof *mz->original);
     
     //Allocate memory for each rows content amount
     for(int y = 0; y < mz->height; y++){
-        mz->current[y] = malloc(mz->width * sizeof(int));
-        mz->original[y] = malloc(mz->width * sizeof(int));
+        mz->current[y] = malloc(mz->width * sizeof *mz->current[y]);
+        mz->original[y] = malloc(mz->width * sizeof *mz->original[y]);
     }
 }
 
@@ -95,6 +141,10 @@ static bool read_content_of_maze(Maze *mz, FILE *file){
             if(fscanf(file, "%d", &mz->current[y][x]) != 1){
                 fprintf(stderr, "Werte der Koordinate nicht einlesbar.\n");
                 return false;
+            }
+            if(mz->current[y][x] == CELL_DOOR){
+                mz->door_x = x;
+                mz->door_y = y;
             }
         }
     }
@@ -128,9 +178,16 @@ bool load_maze_from_file(Maze *maze, const char *filename) {
     }
     fclose(file);
     copy_maze(maze);
+        
+    //Count plates and traps
+    maze->plate_count = scan_plates(maze);
+    maze->trap_count = scan_traps(maze);
+    
+    //Allocate arrays of Plate and Trap structs
+    maze->plates = malloc(maze->plate_count * sizeof *maze->plates);
+    maze->traps = malloc(maze->trap_count * sizeof *maze->traps);
 
-    maze->plate_count = scan_plates_and_door(maze);
-    place_plates(maze);
+    place_plates_and_traps(maze);
     
     return true;
 }
@@ -140,11 +197,24 @@ bool load_maze_from_file(Maze *maze, const char *filename) {
  * Restore current maze state with the copy of the original one
  */
 void reset_maze(Maze *maze) {
+    //Reseting traps
+    for(int i = 0; i < maze->trap_count; i++){
+        maze->traps[i].revealed = false;
+        maze->traps[i].triggered = false;
+    }
+    //Reseting plates
+    for(int i = 0; i < maze->trap_count; i++){
+        maze->plates[i].visible = false;
+        maze->plates[i].plate_pressed = false;
+    }
+    
     for (int y = 0; y < maze->height; y++) {
         for (int x = 0; x < maze->width; x++) {
             maze->current[y][x] = maze->original[y][x];
         }
     }
+    //Seting plates and traps again
+    place_plates_and_traps(maze);
 }
 
 
@@ -162,12 +232,19 @@ void free_maze(Maze *maze) {
     }
     //Releasing memory of the structures
     free(maze->current);
-    maze->current = NULL;
     free(maze->original);
+    maze->current = NULL;
     maze->original = NULL;
-    free(maze->plate_x);
-    free(maze->plate_y);
-    free(maze->plate_pressed);
+    
+    
+    //Free Plate struct
+    free(maze->plates);
+    maze->plates = NULL;
+    
+    
+    //Free Traps struct
+    free(maze->traps);
+    maze->traps = NULL;
 }
 
 
@@ -223,13 +300,14 @@ void handle_trap(GameState *gs){
     int cell_y = (int)(gs->player->y - MAZE_OFFSET_Y) / CELL_SIZE;
     bool in_trap = gs->maze->current[cell_y][cell_x] == CELL_TRAP;
 
-    //Reducing lives in case player stands on trap and clear field
-    if (in_trap && !gs->player->traps_visited) {
-        gs->player->lives--;
-        gs->player->traps_visited = true;
-        gs->maze->current[cell_y][cell_x] = CELL_EMPTY;
-    } else if (!in_trap) {
-        gs->player->traps_visited = false;
+    for(int i = 0; i < gs->maze->trap_count; i++){
+        Trap *t = &gs->maze->traps[i];
+        if(t->revealed && !t->triggered && t->trap_x == cell_x && t->trap_y == cell_y){
+            gs->player->lives--;
+            t->triggered = true;
+            gs->maze->current[cell_y][cell_x] = CELL_EMPTY;
+            break;
+        }
     }
 }
 
@@ -242,27 +320,28 @@ void handle_plates(GameState *gs){
     int cell_x = (int)(gs->player->x - MAZE_OFFSET_X) / CELL_SIZE;
     int cell_y = (int)(gs->player->y - MAZE_OFFSET_Y) / CELL_SIZE;
     
-    //Player stepping on new preassure plate
-    if(gs->maze->current[cell_y][cell_x] == CELL_PLATE && gs->player->plate_visited == false){
-        int current_plate = gs->maze->current_plate; //Initial plate 0
-        
-        //Marking plate as pressed
-        gs->maze->plate_pressed[current_plate] = true;
-        gs->maze->current[cell_y][cell_x] = CELL_EMPTY;
-        gs->player->plate_visited = true;
-        
-        //Revealing next plate on map in case there is another one
-        gs->maze->current_plate++;
-        if(gs->maze->current_plate < gs->maze->plate_count){
-            int next_x = gs->maze->plate_x[gs->maze->current_plate];
-            int next_y = gs->maze->plate_y[gs->maze->current_plate];
-            gs->maze->current[next_y][next_x] = CELL_PLATE; //Revealing next plate
-        } else {
+    //Revealing plates one by one
+    for(int i = 0; i < gs->maze->plate_count; i++){
+        Plate *p = &gs->maze->plates[i];
+        if(p->visible && !p->plate_pressed && p->plate_x == cell_x && p->plate_y == cell_y){ //Plate visible, not pressed and right coordinates
+            p->plate_pressed = true;
+            gs->maze->current[cell_y][cell_x] = CELL_EMPTY;
+            //Revealing next plate
+            if(i+1 < gs->maze->plate_count){
+                gs->maze->plates[i+1].visible = true;
+                int next_x = gs->maze->plates[i+1].plate_x;
+                int next_y = gs->maze->plates[i+1].plate_y;
+                gs->maze->current[next_y][next_x] = CELL_PLATE;
+            }
+            else{
+            //Open the door
             gs->maze->current[gs->maze->door_y][gs->maze->door_x] = CELL_EMPTY;
+            }
+            break;
         }
     }
     //Reset when player moved on
-    else if(gs->maze->current[cell_y][cell_x] != CELL_PLATE){
+    if(gs->maze->current[cell_y][cell_x] != CELL_PLATE){
         gs->player->plate_visited = false;
     }
 }
