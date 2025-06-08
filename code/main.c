@@ -57,15 +57,12 @@ int main(int argc, char **argv) {
     gs.maze   = malloc(sizeof *gs.maze);
     gs.player = malloc(sizeof *gs.player);
     gs.maze->current = NULL;
-    gs.maze->original = NULL;
-
-    //Sprite loading and shaping
-    gs.player->sprite_sheet = cairo_image_surface_create_from_png("../assets/slime.png");
-    gs.player->sprite = cairo_surface_create_for_rectangle(gs.player->sprite_sheet, 0, 48, 24, 24);
-
+    gs.maze->original = NULL;  
+    
     //Initialize maze and player
     load_maze_from_file(gs.maze, opts.maze_file);
     spawn_player(gs.player, gs.maze);
+    initiate_player_sprite(gs.player, "../assets/slime.png");
    
     //Starting GTK application
     app = gtk_application_new("org.maze.app", G_APPLICATION_FLAGS_NONE);
@@ -77,8 +74,7 @@ int main(int argc, char **argv) {
     free(gs.pressed_keys);
     free_maze(gs.maze);
     free(gs.maze);
-    cairo_surface_destroy(gs.player->sprite);
-    cairo_surface_destroy(gs.player->sprite_sheet);
+    cleanup_player_sprite(gs.player);
     free(gs.player);
 
     g_object_unref(app);
