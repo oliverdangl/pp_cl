@@ -37,7 +37,7 @@ void draw_maze(cairo_t *cr, const Maze *maze, double cell_width, double cell_hei
             double draw_y = y * cell_height;
 
             if (maze->current[y][x] == CELL_WALL) {
-                // Wand zeichnen
+                // draw Walls
                 cairo_set_source_rgb(cr, 0.3, 0.3, 0.3);
                 cairo_rectangle(cr, draw_x, draw_y, cell_width, cell_height);
                 cairo_fill(cr);
@@ -47,7 +47,7 @@ void draw_maze(cairo_t *cr, const Maze *maze, double cell_width, double cell_hei
                 cairo_stroke(cr);
             }
             else if (maze->current[y][x] == CELL_TRAP || is_revealed_trap(maze, y, x)) {
-                // Falle zeichnen
+                //  draw Traps
                 cairo_set_source_rgb(cr, 1, 0, 0);
                 cairo_arc(cr, draw_x + cell_width/2, draw_y + cell_height/2,
                          fmin(cell_width, cell_height)/3, 0, 2 * M_PI);
@@ -80,30 +80,30 @@ void draw_maze(cairo_t *cr, const Maze *maze, double cell_width, double cell_hei
 void draw_player(cairo_t *cr, const PlayerState *player, double cell_width, double cell_height) {
     if (!player->sprite_sheet) return;
 
-    // Spielerposition berechnen
+    // calculate player position
     double normalized_x = (player->x - MAZE_OFFSET_X) / CELL_SIZE;
     double normalized_y = (player->y - MAZE_OFFSET_Y) / CELL_SIZE;
     double player_x = normalized_x * cell_width - (cell_width / 2);
     double player_y = normalized_y * cell_height - (cell_height / 2);
     double player_size = fmin(cell_width, cell_height) * 0.8;
 
-    // Sprite-Ausschnitt
+    // Sprite-
     int sprite_x = 0;
     int sprite_y = 0;
     gboolean flip_horizontal = FALSE;
 
     switch (player->facing) {
-        case DIR_UP:  // oben
+        case DIR_UP:  // up
             sprite_y = 0;
             break;
-        case DIR_LEFT:  // links → benutze Sprite von rechts, aber gespiegelt
-            sprite_y = 24;   // Y-Position deines „rechts“-Sprites
+        case DIR_LEFT:  // left → Use sprite from right, but mirrored
+            sprite_y = 24;   // Y-position of your “right” sprite
             flip_horizontal = TRUE;
             break;
-        case DIR_DOWN:  // unten
+        case DIR_DOWN:  // down
             sprite_y = 48;
             break;
-        case DIR_RIGHT:  // rechts
+        case DIR_RIGHT:  // right
             sprite_y = 24;
             break;
         default:
@@ -111,12 +111,12 @@ void draw_player(cairo_t *cr, const PlayerState *player, double cell_width, doub
             break;
     }
 
-    // Zeichnen
+    // draw
     cairo_save(cr);
     cairo_translate(cr, player_x + cell_width / 2, player_y + cell_height / 2);
 
     if (flip_horizontal) {
-        // Flip horizontal für "links"
+        // Flip horizontal for "left"
         cairo_scale(cr, -player_size / 24.0, player_size / 24.0);
         cairo_translate(cr, -12, -12);  // Zentrum korrigieren
     } else {
@@ -156,7 +156,7 @@ void draw_game_over(cairo_t *cr, int width, int height) {
     cairo_move_to(cr, (width - extents.width)/2, height/2);
     cairo_show_text(cr, text);
 
-    // Hinweis Text
+    // a notice Text
     cairo_set_font_size(cr, 24);
     const char *hint = "Press ENTER to Restart";
     cairo_text_extents(cr, hint, &extents);
@@ -194,29 +194,29 @@ gboolean draw_callback(GtkWidget *drawing_area, cairo_t *cr, gpointer user_data)
     int width  = alloc.width;
     int height = alloc.height;
 
-    // 1) GANZ GANZ ZU BEGINN: das ganze Fenster hellgrau malen
+    // 1) Right at the beginning: paint the whole window light grey
     cairo_set_source_rgb(cr, 0.9, 0.9, 0.9);
     cairo_paint(cr);
 
-    // 2) Platz für Lives-Display reservieren
+    // 2) Reserve space for Lives display
     double top_margin  = height * 0.08;
     double maze_height = height - top_margin;
 
-    // 3) Zellgröße nur für den Maze-Bereich
+    // 3) Cell size only for the maze area
     double cell_width  = (double)width / gs->maze->width;
     double cell_height = maze_height    / gs->maze->height;
 
-    // 4) Maze + Player im unteren Bereich zeichnen
+    // 4) Draw Maze + Player in the lower area
     cairo_save(cr);
     cairo_translate(cr, 0, top_margin);
     draw_maze(cr,   gs->maze,   cell_width, cell_height);
     draw_player(cr, gs->player, cell_width, cell_height);
     cairo_restore(cr);
 
-    // 5) Lives ganz oben (über dem Maze-Bereich)
+    // 5) Lives at the top (above the Maze area)
     draw_lives(cr, gs->player->lives, width, height);
 
-    // 6) Game Over ggf. mittig im Maze-Bereich
+    // 6) Game Over possibly in the middle of the Maze area
     if (gs->player->lives <= 0) {
         draw_game_over(cr, width, height);
     }
