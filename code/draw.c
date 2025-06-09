@@ -67,7 +67,12 @@ void draw_maze(cairo_t *cr, const Maze *maze, double cell_width, double cell_hei
                 cairo_set_line_width(cr, 1);
                 cairo_rectangle(cr, draw_x, draw_y, cell_width, cell_height);
                 cairo_stroke(cr);
-                }
+                
+                 } else {  // CELL_EMPTY
+            cairo_set_source_rgb(cr, 0.9, 0.9, 0.9);
+            cairo_rectangle(cr, draw_x, draw_y, cell_width, cell_height);
+            cairo_fill(cr);
+        }
         }
     }
 }
@@ -183,34 +188,38 @@ void draw_lives(cairo_t *cr, int lives, double width, double height) {
 }
 
 gboolean draw_callback(GtkWidget *drawing_area, cairo_t *cr, gpointer user_data) {
-
     GameState *gs = (GameState *)user_data;
-    // Fenstergröße ermitteln
     GtkAllocation alloc;
     gtk_widget_get_allocation(drawing_area, &alloc);
-    int width = alloc.width;
+    int width  = alloc.width;
     int height = alloc.height;
 
-    // Hintergrund
+    // 1) GANZ GANZ ZU BEGINN: das ganze Fenster hellgrau malen
     cairo_set_source_rgb(cr, 0.9, 0.9, 0.9);
     cairo_paint(cr);
 
-    // Zellgröße berechnen
-    double cell_width = (double)width / gs->maze->width;
-    double cell_height = (double)height / gs->maze->height;
+    // 2) Platz für Lives-Display reservieren
+    double top_margin  = height * 0.08;
+    double maze_height = height - top_margin;
 
-    // Labyrinth zeichnen
-    draw_maze(cr, gs->maze, cell_width, cell_height);
+    // 3) Zellgröße nur für den Maze-Bereich
+    double cell_width  = (double)width / gs->maze->width;
+    double cell_height = maze_height    / gs->maze->height;
 
-    // Spieler zeichnen
+    // 4) Maze + Player im unteren Bereich zeichnen
+    cairo_save(cr);
+    cairo_translate(cr, 0, top_margin);
+    draw_maze(cr,   gs->maze,   cell_width, cell_height);
     draw_player(cr, gs->player, cell_width, cell_height);
+    cairo_restore(cr);
 
-    // Leben anzeigen
+    // 5) Lives ganz oben (über dem Maze-Bereich)
     draw_lives(cr, gs->player->lives, width, height);
 
-    // Game Over anzeigen falls nötig
+    // 6) Game Over ggf. mittig im Maze-Bereich
     if (gs->player->lives <= 0) {
         draw_game_over(cr, width, height);
     }
+
     return FALSE;
 }
