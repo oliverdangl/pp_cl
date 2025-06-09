@@ -17,8 +17,7 @@ typedef enum{
 typedef struct Plate{
     int plate_x; 
     int plate_y;   
-    bool plate_pressed; 
-    int current_plate; //Current visible plate
+    bool plate_pressed;
     bool visible;
 } Plate;
 

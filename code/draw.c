@@ -9,6 +9,14 @@
 static cairo_surface_t *scare_img = NULL;
 
 
+void cleanup_scare_resource(){
+    if(scare_img){
+        cairo_surface_destroy(scare_img);
+        scare_img = NULL;
+    }
+}
+
+
 static bool is_revealed_trap(const Maze *mz, int y, int x){
     for(int i = 0; i < mz->trap_count; i++){
         if(mz->traps[i].trap_x == x &&
@@ -122,9 +130,11 @@ void draw_player(cairo_t *cr, const PlayerState *player, double cell_width, doub
 
 void draw_game_over(cairo_t *cr, int width, int height) {
     //Draw background picture
-    scare_img = cairo_image_surface_create_from_png("../assets/scare.png");
+    if(scare_img == NULL){
+        scare_img = cairo_image_surface_create_from_png("../assets/scare.png");
+    }
     int img_w = cairo_image_surface_get_width(scare_img);
-    int img_h = cairo_image_surface_get_width(scare_img);
+    int img_h = cairo_image_surface_get_height(scare_img);
     double scale_x = (double)width / img_w;
     double scale_y = (double)height / img_h;
     cairo_save(cr);

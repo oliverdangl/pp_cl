@@ -105,7 +105,7 @@ void reset_maze(Maze *maze) {
         maze->traps[i].triggered = false;
     }
     //Reseting plates
-    for(int i = 0; i < maze->trap_count; i++){
+    for(int i = 0; i < maze->plate_count; i++){
         maze->plates[i].visible = false;
         maze->plates[i].plate_pressed = false;
     }

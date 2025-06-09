@@ -16,6 +16,7 @@ void draw_lives(cairo_t *cr, int lives, double width, double height);
 
 void draw_game_over(cairo_t *cr, int width, int height);
 
+void cleanup_scare_resource();
 
 // Event handler function
 gboolean draw_callback(GtkWidget *drawing_area, cairo_t *cr, gpointer user_data);

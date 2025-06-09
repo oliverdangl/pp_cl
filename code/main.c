@@ -75,6 +75,7 @@ int main(int argc, char **argv) {
     free_maze(gs.maze);
     free(gs.maze);
     cleanup_player_sprite(gs.player);
+    cleanup_scare_resource();
     free(gs.player);
 
     g_object_unref(app);
