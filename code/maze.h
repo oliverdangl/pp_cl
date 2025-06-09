@@ -2,7 +2,7 @@
 #define MAZE_H
 
 #include <stdbool.h>
-typedef struct GameState GameState;
+
 
 //Enum for celltype
 typedef enum{
@@ -57,15 +57,5 @@ void reset_maze(Maze *maze);
 //Free all dynamically alocated memory
 void free_maze(Maze *maze);
 
-//Checks for collision with walls or door
-int is_wall_collision(Maze *maze, float x, float y);
 
-//Handle trap activation and live decrement
-void handle_trap(GameState *gs);
-
-//Handle preassure plate steppinng and door opening
-void handle_plates(GameState *gs);
-
-//Reveal traps near the player
-void reveal_traps_near_player(GameState *gs, float reveal_distance);
 #endif

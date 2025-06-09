@@ -2,6 +2,7 @@
 #include "game.h"
 #include "maze.h"
 #include "config.h"
+#include "game_logic.h"
 #include <cairo.h>
 #include <stdio.h>
 #include <stdbool.h>

@@ -4,6 +4,7 @@
 #include "game.h"
 #include "maze.h"
 #include "player.h"
+#include "game_logic.h"
 
 
 /*
@@ -100,7 +101,7 @@ gboolean update_callback(GtkWidget *widget, GdkFrameClock *clock, gpointer user_
 
     
     reveal_traps_near_player(gs, 48.0f);
-    handle_trap(gs);
+    handle_traps(gs);
     handle_plates(gs);    
     update_player_sprites(gs);
     
