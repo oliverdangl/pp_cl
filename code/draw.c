@@ -55,11 +55,13 @@ void draw_maze(cairo_t *cr, const Maze *maze, double cell_width, double cell_hei
 
             }
             else if(maze->current[y][x] == CELL_PLATE){
+            	// draw pressure plate
                 cairo_set_source_rgb(cr, 0, 0, 1);
                 cairo_arc(cr, draw_x + cell_width/2, draw_y + cell_height/2,
                          fmin(cell_width, cell_height)/3, 0, 2 * M_PI);
                 cairo_fill(cr);
             } else if(maze->current[y][x] == CELL_DOOR){
+            	// draw door
                 cairo_set_source_rgb(cr, 0, 0, 1);
                 cairo_rectangle(cr, draw_x, draw_y, cell_width, cell_height);
                 cairo_fill(cr);
@@ -87,7 +89,8 @@ void draw_player(cairo_t *cr, const PlayerState *player, double cell_width, doub
     double player_y = normalized_y * cell_height - (cell_height / 2);
     double player_size = fmin(cell_width, cell_height) * 0.8;
 
-    // Sprite-
+    // Determine sprite Y-offset and whether to flip based on player direction
+
     int sprite_x = 0;
     int sprite_y = 0;
     gboolean flip_horizontal = FALSE;
@@ -118,7 +121,8 @@ void draw_player(cairo_t *cr, const PlayerState *player, double cell_width, doub
     if (flip_horizontal) {
         // Flip horizontal for "left"
         cairo_scale(cr, -player_size / 24.0, player_size / 24.0);
-        cairo_translate(cr, -12, -12);  // Zentrum korrigieren
+        cairo_translate(cr, -12, -12);  // Correct the sprite center offset
+        
     } else {
         cairo_scale(cr, player_size / 24.0, player_size / 24.0);
         cairo_translate(cr, -12, -12);
@@ -198,13 +202,15 @@ gboolean draw_callback(GtkWidget *drawing_area, cairo_t *cr, gpointer user_data)
     cairo_set_source_rgb(cr, 0.9, 0.9, 0.9);
     cairo_paint(cr);
 
-    // 2) Reserve space for Lives display
+    // 2) Reserve vertical space at the top for the Lives UI
+
     double top_margin  = height * 0.08;
     double maze_height = height - top_margin;
 
-    // 3) Cell size only for the maze area
+    // 3) Compute cell size based on the remaining space (excluding the top margin)
+
     double cell_width  = (double)width / gs->maze->width;
-    double cell_height = maze_height    / gs->maze->height;
+    double cell_height = maze_height   / gs->maze->height;
 
     // 4) Draw Maze + Player in the lower area
     cairo_save(cr);
