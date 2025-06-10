@@ -83,8 +83,8 @@ void draw_player(cairo_t *cr, const PlayerState *player, double cell_width, doub
     if (!player->sprite_sheet) return;
 
     // calculate player position
-    double normalized_x = (player->x - MAZE_OFFSET_X) / CELL_SIZE;
-    double normalized_y = (player->y - MAZE_OFFSET_Y) / CELL_SIZE;
+    double normalized_x = player->x / CELL_SIZE;
+    double normalized_y = player->y / CELL_SIZE;
     double player_x = normalized_x * cell_width - (cell_width / 2);
     double player_y = normalized_y * cell_height - (cell_height / 2);
     double player_size = fmin(cell_width, cell_height) * 0.8;

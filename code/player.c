@@ -51,8 +51,8 @@ void spawn_player(PlayerState *player, const Maze *maze){
         for(int x = 0; x < maze->width; x++){
             if(maze->current[y][x] == 0){
                 //Setting spawn coordinates
-                player->x = MAZE_OFFSET_X + CELL_SIZE * x + CELL_SIZE / 2.0f; //Divided by 2 for centering
-                player->y = MAZE_OFFSET_Y + CELL_SIZE * y + CELL_SIZE / 2.0f; //Divided by 2 for centering
+                player->x = CELL_SIZE * x + CELL_SIZE / 2.0f; //Divided by 2 for centering
+                player->y = CELL_SIZE * y + CELL_SIZE / 2.0f; //Divided by 2 for centering
                 spwn_found = true;
                 break;
             }

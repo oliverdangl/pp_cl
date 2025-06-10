@@ -14,8 +14,8 @@ void reveal_traps_near_player(GameState *gs, float reveal_distance){
         Trap *t = &gs->maze->traps[i];
         if(!t->revealed){
         
-        float trap_x = t->trap_x * CELL_SIZE + MAZE_OFFSET_X + CELL_SIZE/2;
-        float trap_y = t->trap_y * CELL_SIZE + MAZE_OFFSET_Y + CELL_SIZE/2;
+        float trap_x = t->trap_x * CELL_SIZE + CELL_SIZE/2;
+        float trap_y = t->trap_y * CELL_SIZE + CELL_SIZE/2;
         
         float dist_x = current_x - trap_x;
         float dist_y = current_y - trap_y;
@@ -68,8 +68,8 @@ int scan_traps(const Maze *mz){
  */
 void handle_traps(GameState *gs){
     //Getting current player coordinates
-    int cell_x = (int)(gs->player->x - MAZE_OFFSET_X) / CELL_SIZE;
-    int cell_y = (int)(gs->player->y - MAZE_OFFSET_Y) / CELL_SIZE;
+    int cell_x = (int)gs->player->x / CELL_SIZE;
+    int cell_y = (int)gs->player->y / CELL_SIZE;
     bool in_trap = gs->maze->current[cell_y][cell_x] == CELL_TRAP;
 
     for(int i = 0; i < gs->maze->trap_count; i++){
@@ -89,8 +89,8 @@ void handle_traps(GameState *gs){
  */
 void handle_plates(GameState *gs){
     //Getting player coordinates
-    int cell_x = (int)(gs->player->x - MAZE_OFFSET_X) / CELL_SIZE;
-    int cell_y = (int)(gs->player->y - MAZE_OFFSET_Y) / CELL_SIZE;
+    int cell_x = (int)gs->player->x / CELL_SIZE;
+    int cell_y = (int)gs->player->y / CELL_SIZE;
     
     //Revealing plates one by one
     for(int i = 0; i < gs->maze->plate_count; i++){
@@ -167,10 +167,10 @@ int is_wall_collision(Maze *maze, float x, float y) {
     float bottom_edge = y + hitbox_half;
 
     //Converting world coordinates into maze cell indices
-    int left_cell = (int)((left_edge - MAZE_OFFSET_X) / CELL_SIZE);
-    int right_cell = (int)((right_edge - MAZE_OFFSET_X) / CELL_SIZE);
-    int top_cell = (int)((top_edge - MAZE_OFFSET_Y) / CELL_SIZE);
-    int bottom_cell = (int)((bottom_edge - MAZE_OFFSET_Y) / CELL_SIZE);
+    int left_cell = (int)(left_edge / CELL_SIZE);
+    int right_cell = (int)(right_edge / CELL_SIZE);
+    int top_cell = (int)(top_edge / CELL_SIZE);
+    int bottom_cell = (int)(bottom_edge / CELL_SIZE);
     
 
     //In case reaching outside maze boundaries
