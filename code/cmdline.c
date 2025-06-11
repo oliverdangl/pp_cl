@@ -36,6 +36,8 @@ error_t parse_opt(int key, char *arg, struct argp_state *state) {
     return 0;
 }
 
+
+//Register of options at argp
 struct argp argp = { options, parse_opt, args_doc, doc };
 
 
@@ -46,7 +48,7 @@ void parse_args(int argc, char **argv, GameOptions *opts) {
     opts->window_height = WINDOW_HEIGHT;
     opts->maze_file     = "../maps/maze.txt";
     
-    //Calling argp library to parse
+    //Starting argp, takes over argc/argv and writes in opts
     argp_parse(&argp, argc, argv, 0, NULL, opts);
 }
 

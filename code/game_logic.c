@@ -7,6 +7,7 @@
  * Revealing traps within the calculated radius of the player
  */
 void reveal_traps_near_player(GameState *gs, float reveal_distance){
+    //Current player coordinates
     float current_x = gs->player->x;
     float current_y = gs->player->y;
     
@@ -14,12 +15,15 @@ void reveal_traps_near_player(GameState *gs, float reveal_distance){
         Trap *t = &gs->maze->traps[i];
         if(!t->revealed){
         
+        //Calculate world coordinate of trap center
         float trap_x = t->trap_x * CELL_SIZE + CELL_SIZE/2;
         float trap_y = t->trap_y * CELL_SIZE + CELL_SIZE/2;
         
+        //Calculating radius to the trap around the player
         float dist_x = current_x - trap_x;
         float dist_y = current_y - trap_y;
         float dist2 = dist_x * dist_x + dist_y * dist_y;
+        
         if(dist2 <= reveal_distance * reveal_distance){
             //reveal
             t->revealed = true;
@@ -46,6 +50,7 @@ int scan_plates(const Maze *mz){
     return count;
 }
 
+
 /*
  * Scan the original maze for traps
  */
@@ -64,23 +69,40 @@ int scan_traps(const Maze *mz){
 
 
 /*
+ * Helper function to check if in trap
+ */
+static bool in_trap(Trap *t, const int cell_x, const int cell_y){
+    return (t->revealed && !t->triggered &&
+             t->trap_x == cell_x && t->trap_y == cell_y);
+}
+
+
+/*
  * Decrement life of a player once he steps into a trap until he leaves the trap
  */
 void handle_traps(GameState *gs){
-    //Getting current player coordinates
+    //Getting current player coordinates as integer
     int cell_x = (int)gs->player->x / CELL_SIZE;
     int cell_y = (int)gs->player->y / CELL_SIZE;
-    bool in_trap = gs->maze->current[cell_y][cell_x] == CELL_TRAP;
 
     for(int i = 0; i < gs->maze->trap_count; i++){
         Trap *t = &gs->maze->traps[i];
-        if(t->revealed && !t->triggered && t->trap_x == cell_x && t->trap_y == cell_y){
+        if(in_trap(t, cell_x, cell_y)){
             gs->player->lives--;
             t->triggered = true;
             gs->maze->current[cell_y][cell_x] = CELL_EMPTY;
             break;
         }
     }
+}
+
+
+/*
+ * Helper function to check if player stands on trap
+ */
+static bool on_plate(Plate *p, const int cell_x, const int cell_y){
+    return (p->visible && !p->plate_pressed &&
+                p->plate_x == cell_x && p->plate_y == cell_y);
 }
 
 
@@ -95,7 +117,7 @@ void handle_plates(GameState *gs){
     //Revealing plates one by one
     for(int i = 0; i < gs->maze->plate_count; i++){
         Plate *p = &gs->maze->plates[i];
-        if(p->visible && !p->plate_pressed && p->plate_x == cell_x && p->plate_y == cell_y){ //Plate visible, not pressed and right coordinates
+        if(on_plate(p, cell_x, cell_y)){
             p->plate_pressed = true;
             gs->maze->current[cell_y][cell_x] = CELL_EMPTY;
             //Revealing next plate
@@ -134,6 +156,7 @@ void place_plates_and_traps(Maze *mz){
                 mz->plates[p_index].plate_y = y;
                 mz->current[y][x] = CELL_EMPTY; //Hide plate
                 mz->plates[p_index].plate_pressed = false;
+                mz->plates[p_index].visible = false;
                 p_index++;
             }
             else if(mz->original[y][x] == CELL_TRAP){

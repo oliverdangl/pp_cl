@@ -11,4 +11,7 @@
 //Max player lives
 #define MAX_LIVES 3
 
+//Revealdistance for traps (World units)
+#define REVEAL_DISTANCE 48.0f
+
 #endif

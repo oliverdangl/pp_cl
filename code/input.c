@@ -48,7 +48,7 @@ static void process_input(GameState *gs, float dt, float *dx, float *dy){
     *dx = 0;
     *dy = 0;
 
-    //Checking movement keys in upper and lower case
+    //Checking movement keys in upper and lower case and compute movement deltas
     if (gs->pressed_keys['w'] || gs->pressed_keys['W']) {
         *dy -= speed;
         gs->player->facing = DIR_UP; 
@@ -74,7 +74,7 @@ static void process_input(GameState *gs, float dt, float *dx, float *dy){
  */
 gboolean update_callback(GtkWidget *widget, GdkFrameClock *clock, gpointer user_data) {
     GameState *gs = (GameState *)user_data;
-    static gint64 prev_time = 0;
+    static gint64 prev_time = 0; //Last frame for delta calculation
 
     //If game over, stop game
     if (gs->player->lives <= 0) {
@@ -91,16 +91,17 @@ gboolean update_callback(GtkWidget *widget, GdkFrameClock *clock, gpointer user_
         return G_SOURCE_CONTINUE;
     }
     
-    // Delta time in seconds 
+    //Delta time in seconds for frame independent time  
     float dt = (now - prev_time) / 1000000.0f;
     prev_time = now;
 
-    float dx = 0, dy = 0;
+    //Distant coordinates a player has moved
+    float dx, dy;
+    
     process_input(gs, dt, &dx, &dy);
     apply_movement(gs, dx, dy);
 
-    
-    reveal_traps_near_player(gs, 48.0f);
+    reveal_traps_near_player(gs, REVEAL_DISTANCE);
     handle_traps(gs);
     handle_plates(gs);    
     update_player_sprites(gs);
@@ -108,7 +109,7 @@ gboolean update_callback(GtkWidget *widget, GdkFrameClock *clock, gpointer user_
     //Redrawing window
     gtk_widget_queue_draw(widget);
     return G_SOURCE_CONTINUE;
-    }
+}
 
 
 
