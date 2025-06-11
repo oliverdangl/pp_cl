@@ -8,7 +8,7 @@
 //Jumpscare picture global for only loading once, not every game over
 static cairo_surface_t *scare_img = NULL;
 
-
+// Frees the memory used by the scare image if it was loaded
 void cleanup_scare_resource(){
     if(scare_img){
         cairo_surface_destroy(scare_img);
@@ -16,7 +16,7 @@ void cleanup_scare_resource(){
     }
 }
 
-
+//Checks whether a trap at position (y,x) has been revealed
 static bool is_revealed_trap(const Maze *mz, int y, int x){
     for(int i = 0; i < mz->trap_count; i++){
         if(mz->traps[i].trap_x == x &&
@@ -29,7 +29,7 @@ static bool is_revealed_trap(const Maze *mz, int y, int x){
 }
 
 
-
+// draw playing field
 void draw_maze(cairo_t *cr, const Maze *maze, double cell_width, double cell_height) {
     for (int y = 0; y < maze->height; y++) {
         for (int x = 0; x < maze->width; x++) {
@@ -82,7 +82,7 @@ void draw_maze(cairo_t *cr, const Maze *maze, double cell_width, double cell_hei
 void draw_player(cairo_t *cr, const PlayerState *player, double cell_width, double cell_height) {
     if (!player->sprite_sheet) return;
 
-    // calculate player position
+    // calculate player position in maze cell coordinates
     double normalized_x = player->x / CELL_SIZE;
     double normalized_y = player->y / CELL_SIZE;
     double player_x = normalized_x * cell_width - (cell_width / 2);
@@ -93,7 +93,7 @@ void draw_player(cairo_t *cr, const PlayerState *player, double cell_width, doub
 
     int sprite_x = 0;
     int sprite_y = 0;
-    gboolean flip_horizontal = FALSE;
+    gboolean flip_horizontal = FALSE;  // mirror the sprite
 
     switch (player->facing) {
         case DIR_UP:  // up
@@ -114,7 +114,7 @@ void draw_player(cairo_t *cr, const PlayerState *player, double cell_width, doub
             break;
     }
 
-    // draw
+    // draw the player sprite
     cairo_save(cr);
     cairo_translate(cr, player_x + cell_width / 2, player_y + cell_height / 2);
 
@@ -128,8 +128,9 @@ void draw_player(cairo_t *cr, const PlayerState *player, double cell_width, doub
         cairo_translate(cr, -12, -12);
     }
 
+    // Cut out a 24x24 sprite from the sprite sheet at position (sprite_x, sprite_y)
     cairo_surface_t *sprite = cairo_surface_create_for_rectangle(
-        player->sprite_sheet, sprite_x, sprite_y, 24, 24);
+    player->sprite_sheet, sprite_x, sprite_y, 24, 24);
     cairo_set_source_surface(cr, sprite, 0, 0);
     cairo_paint(cr);
     cairo_surface_destroy(sprite);
@@ -140,12 +141,17 @@ void draw_player(cairo_t *cr, const PlayerState *player, double cell_width, doub
 void draw_game_over(cairo_t *cr, int width, int height) {
     //Draw background picture
     if(scare_img == NULL){
+        // load only once
         scare_img = cairo_image_surface_create_from_png("../assets/scare.png");
     }
+    // widh and height of image
     int img_w = cairo_image_surface_get_width(scare_img);
     int img_h = cairo_image_surface_get_height(scare_img);
+    
+    //scaled
     double scale_x = (double)width / img_w;
     double scale_y = (double)height / img_h;
+    
     cairo_save(cr);
     cairo_scale(cr, scale_x, scale_y);
     cairo_set_source_surface(cr, scare_img, 0, 0);
